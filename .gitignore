@@ -30,3 +30,14 @@
 *.exe
 *.out
 *.app
+
+MCPT/\.vs/MCPT/v15/
+
+MCPT/x64/Release/
+
+MCPT/MCPT/x64/Release/MCPT\.tlog/
+
+MCPT/MCPT/x64/Release/
+
+*.ppm
+*.png

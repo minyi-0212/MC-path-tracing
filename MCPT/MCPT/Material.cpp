@@ -35,7 +35,7 @@ bool refract(const vec3& v, const vec3& n, float ni_over_nt, vec3& refracted)
 	//n sin(theta) = n¡¯ sin(theta¡¯)
 	vec3 L = normalize(v);
 	float cos1 = dot(-L, n);
-	float discriminant = 1.0 - ni_over_nt * ni_over_nt*(1 - cos1 * cos1);
+	float discriminant = 1.0f - ni_over_nt * ni_over_nt*(1 - cos1 * cos1);
 	if (discriminant > 0) {
 		refracted = ni_over_nt * (L + n * cos1) - n * sqrt(discriminant);
 		return true;
@@ -72,7 +72,7 @@ bool Dielectric::scatter(const Ray& r_in, const hit_record& rec, vec3& attenuati
 	}
 	else {
 		outward_normal = rec.normal;
-		ni_over_nt = 1.0 / ref_idx;
+		ni_over_nt = 1.0f / ref_idx;
 		cosine = -dot(r_in.direction(), rec.normal) / r_in.direction().length();
 	}
 

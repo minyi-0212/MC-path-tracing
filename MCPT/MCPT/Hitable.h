@@ -47,7 +47,7 @@ private:
 	list<Hitable*> l;
 };
 
-// bvh
+// bvh -- kdtree
 class Bvh : public Hitable {
 public:
 	Bvh() {}

@@ -124,12 +124,15 @@
     <ClCompile Include="Hitable.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Material.cpp" />
+    <ClCompile Include="obj_loader.cpp" />
     <ClCompile Include="Performance.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AABB.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Hitable.h" />
     <ClInclude Include="Material.h" />
+    <ClInclude Include="obj_loader.h" />
     <ClInclude Include="Performance.h" />
     <ClInclude Include="Ray.h" />
   </ItemGroup>

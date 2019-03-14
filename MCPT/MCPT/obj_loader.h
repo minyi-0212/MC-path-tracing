@@ -5,22 +5,21 @@
 #include <map>
 #include <glm.hpp>
 
-using std::string;
-
 struct mtl_param
 {
-	string name;
+	std::string name;
 	float Ns, // shiness
 		Ni, // refractive index
 		illum;
-	vec3 ka, kd, ks, Tf; // ambient diffuse specular transmission filter
+	glm::vec3 ka, kd, ks, Tf; // ambient diffuse specular transmission filter
 
 };
 
 class Object
 {
 public:
-	void read_obj(std::string filename);
+	Object(std::string filename) { read_obj(filename); };
+	void read_obj(std::string obj_file);
 	void get_vertices(std::vector<glm::vec3>& vertices)
 	{
 		vertices = _vertices;
@@ -30,6 +29,8 @@ public:
 	void get_faces(std::vector<std::vector<glm::vec3>>& faces);
 
 private:
+	bool read_mtl(std::string mtl_file);
+
 	std::vector<glm::vec3> _vertices;//顶点
 	std::vector<int> _faces;//面
 	std::vector<std::pair<float, float>> _texturecoords;//纹理坐标

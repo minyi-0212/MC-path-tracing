@@ -12,6 +12,7 @@ class Material
 public:
 	virtual bool scatter(const Ray& r_in, const hit_record& rec, 
 		vec3& attenuation, Ray& scattered) const = 0; // attenuation:less scattered:direction
+	virtual vec3 emitted() { return vec3(0); };
 };
 
 class Lambertian :public Material
@@ -43,4 +44,19 @@ public:
 
 private:
 	float ref_idx; //refractive indices
+};
+
+class Diffuse_light : public Material
+{
+public:
+	Diffuse_light(const vec3& v) :Le(v) {};
+	virtual bool scatter(const Ray& r_in, const hit_record& rec,
+		vec3& attenuation, Ray& scattered) const 
+	{
+		return false;
+	};
+	virtual vec3 emitted() { return Le; };
+
+private:
+	vec3 Le;
 };

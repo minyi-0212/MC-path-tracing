@@ -5,15 +5,57 @@
 
 using namespace glm;
 using namespace std;
+bool Object::read_mtl(string mtl_file)
+{
+	ifstream file(mtl_file);
+	if (!file.is_open())
+	{
+		cerr << "mtl文件" + mtl_file + "无法打开" << endl;
+		return false;
+	}
 
-void Object::read_obj(string file)
+	bool flag = false;
+	string material_name;
+	mtl_param material;
+
+	string type;
+	int illumination_model;
+
+
+	while (file >> type)
+	{
+		if (type == "newmtl")
+		{
+			if (flag)
+			{
+				//material_table.insert(make_pair(material_name, material));
+				material = mtl_param();
+			}
+			else flag = true;
+
+			file >> material_name;
+			material.name = material_name;
+			cout << material_name << endl;
+		}
+		else if (type == "Kd")//duffuse 参数
+		{
+			file >> material.kd.x >> material.kd.y >> material.kd.z;
+		}
+	}
+
+	//if (flag) material_table.insert(make_pair(material_name, material));//插入最后一种材料
+
+	return true;
+}
+
+void Object::read_obj(string obj_file)
 {
 	string line, type, mtllib, mtlname;
-	ifstream fin(file);
+	ifstream fin(obj_file);
 	istringstream is;
 
 	if (!fin) {
-		cout << "Cannot open the file when ReadObj:" << file << endl;
+		cout << "Cannot open the obj file :" << obj_file << endl;
 		exit(0);
 	}
 	while (!fin.eof())
@@ -27,6 +69,13 @@ void Object::read_obj(string file)
 		//存储mtl文件名称
 		if (type == "mtllib") {
 			is >> mtllib;
+			string mtl_path = obj_file.substr(0, obj_file.find_last_of('/') + 1) + mtllib;
+
+			if (!read_mtl(mtl_path))
+			{
+				cerr << "Failed to read mtl file" << mtl_path << endl;
+				break;
+			}
 		}
 		//存储材质名称
 		else if (type == "usemtl") {
@@ -90,7 +139,7 @@ void Object::read_obj(string file)
 		}
 		line = "";
 	}
-	//readMTL(mtllib);
+	fin.close();
 }
 
 void Object::get_faces(vector<vector<int>>& faces)

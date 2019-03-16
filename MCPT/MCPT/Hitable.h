@@ -101,3 +101,17 @@ public:
 	Material  *material;
 	float y0, y1, z0, z1, k;
 };
+
+class Triangle : public Hitable
+{
+public:
+	Triangle(const vec3& v0, const vec3 & v1, const vec3 & v2, Material *mat) :
+		v0(v0), v1(v1), v2(v2), e1(v1 - v0), e2(v2 - v0),
+		normal(normalize(cross(v1 - v0, v2 - v0))), material(mat) {}
+	virtual bool hit(const Ray& r, float t_min, float t_max, hit_record& rec) const;
+	virtual bool bounding_box(float t0, float t1, AABB& box) const;
+
+private:
+	vec3 v0, v1, v2, e1, e2, normal;
+	Material  *material;
+};

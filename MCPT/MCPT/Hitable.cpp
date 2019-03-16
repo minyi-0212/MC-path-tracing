@@ -1,5 +1,9 @@
 #include "Hitable.h"
 #include <iostream>
+#include <algorithm>
+
+#define min3(a,b,c) __min(a,__min(b,c))
+#define max3(a,b,c) __max(a,__max(b,c))
 
 bool Sphere::hit(const Ray& r, float t_min, float t_max, hit_record& rec) const
 {
@@ -83,39 +87,6 @@ bool Hitable_list::bounding_box(float t0, float t1, AABB& box) const
 }
 
 
-bool Bvh::hit(const Ray& r, float t_min, float t_max, hit_record& rec) const 
-{
-	if (box.hit(r, t_min, t_max)) {
-		hit_record left_rec, right_rec;
-		bool hit_left = left->hit(r, t_min, t_max, left_rec);
-		bool hit_right = right->hit(r, t_min, t_max, right_rec);
-		if (hit_left && hit_right) {
-			if (left_rec.t < right_rec.t)
-				rec = left_rec;
-			else
-				rec = right_rec;
-			return true;
-		}
-		else if (hit_left) {
-			rec = left_rec;
-			return true;
-		}
-		else if (hit_right) {
-			rec = right_rec;
-			return true;
-		}
-		else
-			return false;
-	}
-	else return false;
-}
-
-bool Bvh::bounding_box(float t0, float t1, AABB& b) const 
-{
-	b = box;
-	return true;
-}
-
 int box_x_compare(const Hitable* a, const Hitable* b) {
 	AABB box_left, box_right;
 	if (!a->bounding_box(0, 0, box_left) || !b->bounding_box(0, 0, box_right))
@@ -178,6 +149,41 @@ Bvh::Bvh(list<Hitable*>& l, float time0, float time1) {
 	box = merge_box(box_left, box_right);
 }
 
+bool Bvh::hit(const Ray& r, float t_min, float t_max, hit_record& rec) const
+{
+	box.hit(r, t_min, t_max);
+	if (box.hit(r, t_min, t_max)) {
+		hit_record left_rec, right_rec;
+		bool hit_left = left->hit(r, t_min, t_max, left_rec);
+		bool hit_right = right->hit(r, t_min, t_max, right_rec);
+		if (hit_left && hit_right) {
+			if (left_rec.t < right_rec.t)
+				rec = left_rec;
+			else
+				rec = right_rec;
+			return true;
+		}
+		else if (hit_left) {
+			rec = left_rec;
+			return true;
+		}
+		else if (hit_right) {
+			rec = right_rec;
+			return true;
+		}
+		else
+			return false;
+	}
+	else 
+		return false;
+}
+
+bool Bvh::bounding_box(float t0, float t1, AABB& b) const
+{
+	b = box;
+	return true;
+}
+
 bool RectXY::hit(const Ray& r, float t0, float t1, hit_record& rec) const {
 	float t = (k - r.origin()[2]) / r.direction()[2];
 	if (t < t0 || t > t1)
@@ -192,7 +198,6 @@ bool RectXY::hit(const Ray& r, float t0, float t1, hit_record& rec) const {
 	rec.normal = vec3(0, 0, 1);
 	return true;
 }
-
 
 bool RectXZ::hit(const Ray& r, float t0, float t1, hit_record& rec) const {
 	float t = (k - r.origin()[1]) / r.direction()[1];
@@ -221,5 +226,46 @@ bool RectYZ::hit(const Ray& r, float t0, float t1, hit_record& rec) const {
 	rec.p = r.point_at_t(t);
 	rec.material_ptr = material;
 	rec.normal = vec3(1, 0, 0);
+	return true;
+}
+
+bool Triangle::hit(const Ray& r, float t_min, float t_max, hit_record& rec) const
+{
+	vec3 q = cross(r.direction(), e2);
+	float alpha = dot(e1, q);
+	if (abs(alpha) < 0.0001)
+		return false;
+	float factor = 1.0 / alpha;
+	vec3 s = r.origin() - v0;
+	float u = dot(s, q) * factor;
+	if (u < 0. || u > 1.)
+		return false;
+	vec3 rr = cross(s, e1);
+	float v = factor * dot(r.direction(), rr);
+	if (v < 0. || v + u >1.)
+		return false;
+	float t = factor * dot(e2, rr);
+	if (t > t_min && t < t_max)
+	{
+		rec.t = t;
+		rec.p = r.point_at_t(t);
+		rec.material_ptr = material;
+		rec.normal = normal;  // simple, need to compute with the normal in vertex
+		return true;
+	}
+	else
+		return false;
+}
+
+bool Triangle::bounding_box(float t0, float t1, AABB& box) const
+{
+	vec3 low(min3(v0[0], v1[0], v2[0]), 
+		min3(v0[1], v1[1], v2[1]),
+		min3(v0[2], v1[2], v2[2])),
+		high(max3(v0[0], v1[0], v2[0]),
+			max3(v0[1], v1[1], v2[1]),
+			max3(v0[2], v1[2], v2[2]));
+
+	box = AABB(low, high);
 	return true;
 }

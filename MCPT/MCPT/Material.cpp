@@ -45,9 +45,9 @@ bool refract(const vec3& v, const vec3& n, float ni_over_nt, vec3& refracted)
 }
 
 //发生折射的概率，schlick：近似地计算出不同入射角旳菲涅耳反射比
-float schlick(float cosine, float ref_idx)
+float schlick(float cosine, float Ni)
 {
-	float r0 = (1 - ref_idx) / (1 + ref_idx);
+	float r0 = (1 - Ni) / (1 + Ni);
 	r0 = r0 * r0;
 	return r0 + (1 - r0)*pow((1 - cosine), 5);
 }
@@ -65,19 +65,19 @@ bool Dielectric::scatter(const Ray& r_in, const hit_record& rec, vec3& attenuati
 	float cosine;
 	if (dot(r_in.direction(), rec.normal) > 0) {
 		outward_normal = -rec.normal;
-		ni_over_nt = ref_idx;
-		//cosine = ref_idx * dot(r_in.direction(), rec.normal) / r_in.direction().length();
+		ni_over_nt = Ni;
+		//cosine = Ni * dot(r_in.direction(), rec.normal) / r_in.direction().length();
 		cosine = dot(r_in.direction(), rec.normal) / r_in.direction().length();
-		cosine = sqrt(1 - ref_idx * ref_idx*(1 - cosine * cosine));
+		cosine = sqrt(1 - Ni * Ni*(1 - cosine * cosine));
 	}
 	else {
 		outward_normal = rec.normal;
-		ni_over_nt = 1.0f / ref_idx;
+		ni_over_nt = 1.0f / Ni;
 		cosine = -dot(r_in.direction(), rec.normal) / r_in.direction().length();
 	}
 
 	if (refract(r_in.direction(), outward_normal, ni_over_nt, refracted))
-		reflect_prob = schlick(cosine, ref_idx);
+		reflect_prob = schlick(cosine, Ni);
 	else
 		reflect_prob = 1.0;
 

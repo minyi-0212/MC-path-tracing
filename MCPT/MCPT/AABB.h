@@ -1,6 +1,8 @@
 #pragma once
 #include "ray.h"
 
+inline float ffmin(float a, float b) { return a < b ? a : b; }
+inline float ffmax(float a, float b) { return a > b ? a : b; }
 class AABB {
 public:
 	AABB() {}
@@ -8,7 +10,7 @@ public:
 
 	vec3 min() const { return _min; }
 	vec3 max() const { return _max; }
-	inline bool hit(const Ray& r, float tmin, float tmax) const
+	bool hit(const Ray& r, float tmin, float tmax) const
 	{
 		for (int a = 0; a < 3; a++) {
 			float invD = 1.0f / r.direction()[a];
@@ -18,7 +20,7 @@ public:
 				std::swap(t0, t1);
 			tmin = t0 > tmin ? t0 : tmin;
 			tmax = t1 < tmax ? t1 : tmax;
-			if (tmax <= tmin)
+			if (tmax < tmin)
 				return false;
 		}
 		return true;

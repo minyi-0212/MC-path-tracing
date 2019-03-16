@@ -2,6 +2,7 @@
 #include <sstream>
 #include <iostream>
 #include "obj_loader.h"
+#include "Material.h"
 
 using namespace glm;
 using namespace std;
@@ -17,11 +18,10 @@ bool Object::read_mtl(string mtl_file)
 	bool flag = false;
 	string material_name;
 	mtl_param material;
-
 	string type;
 	int illumination_model;
 
-
+	cout << "mtl: " << endl;
 	while (file >> type)
 	{
 		if (type == "newmtl")
@@ -35,13 +35,42 @@ bool Object::read_mtl(string mtl_file)
 
 			file >> material_name;
 			material.name = material_name;
-			cout << material_name << endl;
+			cout << "---" << material_name << endl;
 		}
-		else if (type == "Kd")//duffuse 参数
+		else if (type == "Ka")// ambient
 		{
-			file >> material.kd.x >> material.kd.y >> material.kd.z;
+			file >> material.Ka.x >> material.Ka.y >> material.Ka.z;
+		}
+		else if (type == "Kd")// duffuse
+		{
+			file >> material.Kd.x >> material.Kd.y >> material.Kd.z;
+		}
+		else if (type == "Ks")// specular
+		{
+			file >> material.Ks.x >> material.Ks.y >> material.Ks.z;
+		}
+		else if (type == "Tf")// transmission
+		{
+			file >> material.Tf.x >> material.Tf.y >> material.Tf.z;
+		}
+		else if (type == "Ni")// transmission
+		{
+			file >> material.Ni;
+		}
+		else if (type == "Ns")// transmission
+		{
+			file >> material.Ns;
+		}
+		else if (type == "illum")// transmission
+		{
+			file >> material.illum;
+		}
+		else
+		{
+			cout << type << " not parsing." << endl;
 		}
 	}
+	cout << endl;
 
 	//if (flag) material_table.insert(make_pair(material_name, material));//插入最后一种材料
 
@@ -51,8 +80,13 @@ bool Object::read_mtl(string mtl_file)
 void Object::read_obj(string obj_file)
 {
 	string line, type, mtllib, mtlname;
+	vec3 v, vn;
+	int vertex_idx[3];
+	int vertex_normal_idx[3];
+
 	ifstream fin(obj_file);
 	istringstream is;
+	Material* material;
 
 	if (!fin) {
 		cout << "Cannot open the obj file :" << obj_file << endl;
@@ -66,8 +100,9 @@ void Object::read_obj(string obj_file)
 			continue;
 		is.str(line.c_str());
 		is >> type;
-		//存储mtl文件名称
-		if (type == "mtllib") {
+		// load mtl file
+		if (type == "mtllib") 
+		{
 			is >> mtllib;
 			string mtl_path = obj_file.substr(0, obj_file.find_last_of('/') + 1) + mtllib;
 
@@ -77,147 +112,71 @@ void Object::read_obj(string obj_file)
 				break;
 			}
 		}
-		//存储材质名称
-		else if (type == "usemtl") {
-			is >> mtlname;
-			_materials.push_back(mtlname);
+		// new block
+		else if (type == "g" || type == "o")
+		{
+			is >> type;
+			if (type != "default")
+				cout << "obj: " << type << endl;
+			/*if (type == "table") 
+				break;*/
 		}
-		//存储点坐标
-		else if (type == "v") {
-			vec3 v;
+		// the using mtl name
+		else if (type == "usemtl")
+		{
+			is >> mtlname;
+			cout << "    " << mtlname << endl;
+		}
+		// vertex
+		else if (type == "v")
+		{
 			is >> v.x >> v.y >> v.z;
 			_vertices.push_back(v);
 		}
-		//存储法向量
-		else if (type == "vn") {
-			vec3 vn;
+		// vertex normal
+		else if (type == "vn") 
+		{
 			is >> vn.x >> vn.y >> vn.z;
 			_normals.push_back(vn);
 		}
-		//存储纹理坐标
-		else if (type == "vt") {
-			pair<float, float>vt;
-			is >> vt.first >> vt.second;
-			_texturecoords.push_back(vt);
-		}
-		//新的一块
-		else if (type == "g" || type == "o") {
-			pair<int, int> rc;
-			rc.second = 0;
-			_row_col.push_back(rc);
-			continue;
-		}
-		//存储面信息
-		else if (type == "f") {
-			int r = 0, c = 0;
-			while (is >> type) {
-				c = count(type.begin(), type.end(), '/');
-				switch (c) {
-				case 0:
-					_faces.push_back(atoi(type.c_str()));
-					break;
-				case 1:
-					_faces.push_back(atoi(string(type.begin(), type.begin() + type.find("/")).c_str()));
-					_faces.push_back(atoi(string(type.begin() + type.find("/") + 1, type.end()).c_str()));
-					break;
-				case 2:
-					int a1 = type.find("/");
-					int a2 = type.find("/", a1 + 1);
-					_faces.push_back(atoi(string(type.begin(), type.begin() + a1).c_str()));
-					_faces.push_back(atoi(string(type.begin() + a1 + 1, type.begin() + a2).c_str()));
-					_faces.push_back(atoi(string(type.begin() + a2 + 1, type.end()).c_str()));
-					break;
+		// face
+		else if (type == "f") 
+		{
+			char *p, *next = nullptr;
+			char t[100];
+			const char *d = " /";
+			int index = 0;
+			//f 7/13/13 5/14/14 3/3/15 1/1/16
+			while (is >> type) // 7/13/13
+			{
+				//cout << type << endl;
+				strcpy_s(t, type.c_str());
+				p = strtok_s(t, d, &next);
+				if (p)
+				{
+					vertex_idx[index] = atoi(p);
+					p = strtok_s(NULL, d, &next);
+					if (p)
+					{
+						p = strtok_s(NULL, d, &next);
+						if (p)
+						{
+							vertex_normal_idx[index] = atoi(p);
+						}
+					}
 				}
-				++r;
+				index++;
+				if (index >= 3)
+				{
+					scene.push_back(new Triangle(_vertices[vertex_idx[0] - 1], _vertices[vertex_idx[1] - 1],
+						_vertices[vertex_idx[2] - 1], new Lambertian(vec3(random_float_0_1(), random_float_0_1(), random_float_0_1()))));
+
+					vertex_idx[1] = vertex_idx[2];
+					vertex_normal_idx[1] = vertex_normal_idx[2];
+					index = 2;
+				}
 			}
-			//f 286/540/182 283/535/182 285/538/182 287/541/182 
-			//col=3,row=4
-			pair<int, int> rc;
-			rc.first = r;
-			rc.second = c + 1;
-			_row_col.push_back(rc);
 		}
-		line = "";
 	}
 	fin.close();
 }
-
-void Object::get_faces(vector<vector<int>>& faces)
-{
-	/*faces.resize(_row_col.size());
-	int index = 0;
-	for (int i = 0; i < _row_col.size(); i++)
-	{
-		faces[i].resize(_row_col[i].first, 0);
-		for (int x = 0; x < _row_col[i].first; x++)
-		{
-			faces[i][x] = _faces[index];
-			index += _row_col[i].second;
-		}
-	}*/
-	int index = 0, face_size = 0;
-	for (int i = 0; i < _row_col.size(); i++)
-	{
-		if (_row_col[i].first == 0)
-			continue;
-		std::vector<int> tmp(_row_col[i].first, 0);
-		for (int x = 0; x < _row_col[i].first; x++)
-		{
-			tmp[x] = _faces[index];
-			index += _row_col[i].second;
-		}
-		faces.push_back(tmp);
-	}
-};
-
-void Object::get_faces(vector<vector<vec3>>& faces)
-{
-	int index = 0, face_size = 0;
-	for (int i = 0; i < _row_col.size(); i++)
-	{
-		if (_row_col[i].first == 0)
-			continue;
-		std::vector<vec3> tmp(_row_col[i].first);
-		for (int x = 0; x < _row_col[i].first; x++)
-		{
-			tmp[x] = _vertices[_faces[index] - 1];
-			index += _row_col[i].second;
-		}
-		faces.push_back(tmp);
-	}
-};
-
-void Object::get_faces(vector<vector<vector<int>>>& faces)
-{
-	faces.clear();
-	int poly_size = 0, index = 0;
-	for (int id = 0; id < _row_col.size(); id++)
-	{
-		if (_row_col[id].first == 0)
-		{
-			faces.resize(++poly_size);
-		}
-		else
-		{
-			vector<int> tmp(_row_col[id].first);
-			for (int x = 0; x < _row_col[id].first; x++)
-			{
-				tmp[x] = _faces[index];
-				index += _row_col[id].second;
-			}
-			faces[poly_size - 1].push_back(tmp);
-		}
-	}
-
-	/*faces.resize(_row_col.size());
-	int index = 0;
-	for (int i = 0; i < _row_col.size(); i++)
-	{
-		faces[i].resize(_row_col[i].first, 0);
-		for (int x = 0; x < _row_col[i].first; x++)
-		{
-			faces[i][x] = _faces[index];
-			index += _row_col[i].second;
-		}
-	}*/
-};

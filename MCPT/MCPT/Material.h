@@ -39,11 +39,11 @@ private:
 
 class Dielectric : public Material {
 public:
-	Dielectric(float ri) : ref_idx(ri) {}
+	Dielectric(float Ni) : Ni(Ni) {}
 	virtual bool scatter(const Ray& r_in, const hit_record& rec, vec3& attenuation, Ray& scattered) const;
 
 private:
-	float ref_idx; //refractive indices
+	float Ni; // refractive index
 };
 
 class Diffuse_light : public Material

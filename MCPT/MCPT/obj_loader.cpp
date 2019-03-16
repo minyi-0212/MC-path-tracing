@@ -11,7 +11,7 @@ bool Object::read_mtl(string mtl_file)
 	ifstream file(mtl_file);
 	if (!file.is_open())
 	{
-		cerr << "mtl文件" + mtl_file + "无法打开" << endl;
+		cerr << "Cannot open the mtl file: " + mtl_file << endl;
 		return false;
 	}
 
@@ -169,7 +169,7 @@ void Object::read_obj(string obj_file)
 				if (index >= 3)
 				{
 					scene.push_back(new Triangle(_vertices[vertex_idx[0] - 1], _vertices[vertex_idx[1] - 1],
-						_vertices[vertex_idx[2] - 1], new Lambertian(vec3(random_float_0_1(), random_float_0_1(), random_float_0_1()))));
+						_vertices[vertex_idx[2] - 1], new Diffuse_light(vec3(random_float_0_1(), random_float_0_1(), random_float_0_1()))));
 
 					vertex_idx[1] = vertex_idx[2];
 					vertex_normal_idx[1] = vertex_normal_idx[2];

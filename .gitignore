@@ -5,7 +5,7 @@
 *.slo
 *.lo
 *.o
-*.obj
+*\x64\Release\*.obj
 
 # Precompiled Headers
 *.gch

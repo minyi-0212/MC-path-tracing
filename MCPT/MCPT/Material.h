@@ -10,16 +10,27 @@ vec3 random_in_unit_sphere();
 class Material
 {
 public:
-	virtual bool scatter(const Ray& r_in, const hit_record& rec, 
-		vec3& attenuation, Ray& scattered) const = 0; // attenuation:less scattered:direction
-	virtual vec3 emitted() { return vec3(0); };
+	virtual bool scatter(const Ray& r_in, const hit_record& rec,
+		vec3& attenuation, Ray& scattered, float& pdf)
+	{
+		return false;
+	} // attenuation:less scattered:direction
+	virtual float scattering_pdf(const Ray& r_in, const hit_record& rec,
+		const Ray& scattered)
+	{
+		return false;
+	}
+	virtual vec3 emitted() { return vec3(0); }
 };
 
 class Lambertian :public Material
 {
 public:
 	Lambertian(const vec3& a):albedo(a){}
-	virtual bool scatter(const Ray& r_in, const hit_record& rec, vec3& attenuation, Ray& scattered) const;
+	virtual bool scatter(const Ray& r_in, const hit_record& rec,
+		vec3& attenuation, Ray& scattered, float& pdf);
+	virtual float scattering_pdf(const Ray& r_in, const hit_record& rec,
+		const Ray& scattered);
 private:
 	vec3 albedo;
 };
@@ -51,7 +62,7 @@ class Diffuse_light : public Material
 public:
 	Diffuse_light(const vec3& v) :Le(v) {};
 	virtual bool scatter(const Ray& r_in, const hit_record& rec,
-		vec3& attenuation, Ray& scattered) const 
+		vec3& attenuation, Ray& scattered) const
 	{
 		return false;
 	};

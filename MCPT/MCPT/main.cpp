@@ -17,12 +17,13 @@ vec3 color(const Ray& r, Hitable& object_list, const int depth)
 	hit_record rec;
 	if (object_list.hit(r, 0.001, INT_MAX, rec))
 	{
+		float pdf;
 		Ray scattered;
 		vec3 attenuation;
-		if (depth < 50 && rec.material_ptr->scatter(r, rec, attenuation, scattered))
+		if (depth < 50 && rec.material_ptr->scatter(r, rec, attenuation, scattered, pdf))
 		{
 			//cout <<depth << " : " << attenuation[0]<< attenuation[1]<< attenuation[2] << endl;
-			return rec.material_ptr->emitted() + attenuation * color(scattered, object_list, depth + 1);
+			return rec.material_ptr->emitted() + attenuation * rec.material_ptr->scattering_pdf(r, rec, scattered) * color(scattered, object_list, depth + 1) / pdf;
 		}
 		else
 			return rec.material_ptr->emitted();
@@ -105,6 +106,7 @@ void output_ppm()
 		vup(0.0, 1.0, 0.0);
 	Camera cam(lookfrom, lookat, vup, 50., float(nx) / float(ny));
 	Object obj("./scenes/Scene02/room.obj");
+	obj.scene.push_back(new Sphere(vec3(0.0, 1.589, -1.274), 0.2, new Diffuse_light(vec3(50, 50, 40))));
 	Bvh bvh(obj.scene, 0.0, 1.0);
 #endif
 

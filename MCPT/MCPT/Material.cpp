@@ -1,3 +1,5 @@
+#define _USE_MATH_DEFINES
+#include <cmath>
 #include "Material.h"
 
 vec3 random_in_unit_sphere()
@@ -9,12 +11,23 @@ vec3 random_in_unit_sphere()
 	return p;
 }
 
-bool Lambertian::scatter(const Ray& r_in, const hit_record& rec, vec3& attenuation, Ray& scattered) const
+bool Lambertian::scatter(const Ray& r_in, const hit_record& rec,
+	vec3& attenuation, Ray& scattered, float& pdf)
 {
 	vec3 s = rec.p + rec.normal + random_in_unit_sphere();
+	scattered = Ray(rec.p, normalize(s-rec.p));
 	attenuation = albedo;
-	scattered = Ray(rec.p, s - rec.p);
+	pdf = dot(rec.normal, scattered.direction()) / M_PI; // cos¦È
 	return true;
+}
+
+float Lambertian::scattering_pdf(const Ray& r_in, const hit_record& rec,
+	const Ray& scattered)
+{
+	float cosine = dot(rec.normal, normalize(scattered.direction()));
+	if (cosine < 0)
+		cosine = 0;
+	return cosine / M_PI;
 }
 
 vec3 reflect(const vec3& v, const vec3& n)

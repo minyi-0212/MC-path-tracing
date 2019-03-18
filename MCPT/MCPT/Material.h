@@ -14,7 +14,7 @@ public:
 		return false;
 	} // attenuation:less scattered:direction
 	virtual float scattering_pdf(const Ray& r_in, const hit_record& rec,
-		const Ray& scattered)
+		const Ray& scattered) // directional distribution
 	{
 		return false;
 	}

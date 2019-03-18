@@ -184,6 +184,7 @@ bool Bvh::bounding_box(float t0, float t1, AABB& b) const
 	return true;
 }
 
+
 bool RectXY::hit(const Ray& r, float t0, float t1, hit_record& rec) const {
 	float t = (k - r.origin()[2]) / r.direction()[2];
 	if (t < t0 || t > t1)
@@ -214,6 +215,25 @@ bool RectXZ::hit(const Ray& r, float t0, float t1, hit_record& rec) const {
 	return true;
 }
 
+float RectXZ::pdf_value(const vec3& origin, const vec3& v) const
+{
+	hit_record rec;
+	if (this->hit(Ray(origin, v), 0.001, FLT_MAX, rec)) {
+		float area = (x1 - x0)*(z1 - z0);
+		float distance_squared = rec.t * rec.t * length(v)* length(v);
+		float cosine = fabs(dot(v, rec.normal) / length(v));
+		return  distance_squared / (cosine * area);
+	}
+	else
+		return 0;
+}
+
+vec3 RectXZ::random(const vec3& origin) const
+{
+	vec3 random_point = vec3(x0 + random_float_0_1()*(x1 - x0), k, z0 + random_float_0_1()*(z1 - z0));
+	return random_point - origin;
+}
+
 bool RectYZ::hit(const Ray& r, float t0, float t1, hit_record& rec) const {
 	float t = (k - r.origin()[0]) / r.direction()[0];
 	if (t < t0 || t > t1)
@@ -228,6 +248,7 @@ bool RectYZ::hit(const Ray& r, float t0, float t1, hit_record& rec) const {
 	rec.normal = vec3(1, 0, 0);
 	return true;
 }
+
 
 bool Triangle::hit(const Ray& r, float t_min, float t_max, hit_record& rec) const
 {

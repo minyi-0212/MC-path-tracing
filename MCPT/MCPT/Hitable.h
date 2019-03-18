@@ -18,6 +18,8 @@ class Hitable
 public:
 	virtual bool hit(const Ray& r, float t_min, float t_max, hit_record& rec) const = 0;
 	virtual bool bounding_box(float t0, float t1, AABB& box) const = 0;
+	virtual float pdf_value(const vec3& origin, const vec3& v) { return 0; }
+	virtual vec3 random(const vec3& origin) { return vec3(0); }
 };
 
 // sphere
@@ -84,6 +86,8 @@ public:
 		box = AABB(vec3(x0, k - 0.0001, z0), vec3(x1, k + 0.0001, z1));
 		return true;
 	}
+	virtual float  pdf_value(const vec3& origin, const vec3& v) const;
+	virtual vec3 random(const vec3& origin) const;
 	Material  *material;
 	float x0, x1, z0, z1, k;
 };

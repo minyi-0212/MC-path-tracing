@@ -24,3 +24,13 @@ vec3 PDF_cos::generate_random_d() const
 	vec3 tmp = random_cos_direction();
 	return _frame.local(tmp);
 }
+
+float PDF_to_light::value(const vec3& direction) const
+{
+	return obj->pdf_value(origin, direction);
+}
+
+vec3 PDF_to_light::generate_random_d() const
+{
+	return obj->random(origin);
+}

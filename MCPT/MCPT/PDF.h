@@ -55,8 +55,8 @@ class PDF_to_light : public PDF
 public:
 	PDF_to_light(Hitable* obj, const vec3& origin):
 		obj(obj), origin(origin){}
-	virtual float value(const vec3& direction) const {}
-	virtual vec3 generate_random_d() const {}
+	virtual float value(const vec3& direction) const;
+	virtual vec3 generate_random_d() const;
 private:
 	vec3 origin;
 	Hitable* obj;

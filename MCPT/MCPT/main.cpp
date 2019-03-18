@@ -7,6 +7,7 @@
 #include "Camera.h"
 #include "obj_loader.h"
 #include "Performance.h"
+#include "PDF.h"
 
 using std::cout;
 using std::endl;
@@ -17,13 +18,17 @@ vec3 color(const Ray& r, Hitable& object_list, const int depth)
 	hit_record rec;
 	if (object_list.hit(r, 0.001, INT_MAX, rec))
 	{
-		float pdf;
+		float pdf_value;
 		Ray scattered;
 		vec3 attenuation;
-		if (depth < 50 && rec.material_ptr->scatter(r, rec, attenuation, scattered, pdf))
+		if (depth < 50 && rec.material_ptr->scatter(r, rec, attenuation, scattered, pdf_value))
 		{
 			//cout <<depth << " : " << attenuation[0]<< attenuation[1]<< attenuation[2] << endl;
-			return rec.material_ptr->emitted() + attenuation * rec.material_ptr->scattering_pdf(r, rec, scattered) * color(scattered, object_list, depth + 1) / pdf;
+			PDF_cos pdf(rec.normal);
+			scattered = Ray(rec.p, pdf.generate_random_d());
+			pdf_value = pdf.value(scattered.direction());
+			return rec.material_ptr->emitted() + attenuation * rec.material_ptr->scattering_pdf(r, rec, scattered) * 
+				color(scattered, object_list, depth + 1) / pdf_value;
 		}
 		else
 			return rec.material_ptr->emitted();
@@ -90,7 +95,7 @@ void output_ppm()
 #endif
 
 #ifdef scene01
-	int nx = 512, ny = 512, ns = 10;
+	int nx = 512, ny = 512, ns = 100;
 	vec3 lookfrom(0.0, 0.0, 4),
 		lookat(0.0, 0.0, 0.0),
 		vup(0.0, 1.0, 0.0);
@@ -110,10 +115,17 @@ void output_ppm()
 	Bvh bvh(obj.scene, 0.0, 1.0);
 #endif
 
-	std::ofstream fout("./output2/obj_test.ppm");
+	std::ofstream fout("./output2/MC-1.ppm");
 	fout << "P3" << endl << nx << " " << ny << endl << 255 << endl; //P is capital
+	Performance p;
+	p.start();
 	for (int j = ny - 1; j >= 0; j--)
 	{
+		if (j % 10 == 0)
+		{
+			cout << "line : " << j << "/" << ny << ", compute time " << p.end() << "s." << endl;
+			p.start();
+		}
 		for (int i = 0; i < nx; i++)
 		{
 			vec3 rgb(0.0);
@@ -131,21 +143,10 @@ void output_ppm()
 	fout.close();
 }
 
-#include <set>
 int main(int argc, char *argv[])
 {
 	Performance p;
 	p.start();
 	output_ppm();
-
-	// test obj_loader
-	//{
-	//	Object obj("./scenes/Scene02/room.obj");
-	//	//Object obj01("./scenes/Scene01/cup.obj");
-	//	//Object obj03("./scenes/Scene03/VeachMIS.obj");
-	//	vector<vec3> vertex;
-	//	obj.get_vertices(vertex);
-	//	cout <<"vertex :"<< vertex.size() << endl;
-	//}
 	cout << "total time: " << p.end() << "s." << endl;
 }

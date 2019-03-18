@@ -2,7 +2,7 @@
 #include <sstream>
 #include <iostream>
 #include "obj_loader.h"
-#include "Material.h"
+#include "material.h"
 
 using namespace glm;
 using namespace std;
@@ -17,7 +17,8 @@ bool Object::read_mtl(string mtl_file)
 
 	bool flag = false;
 	string material_name;
-	mtl_param material;
+	mtl_param* material = nullptr;
+	//Material* mtl;
 	string type;
 	int illumination_model;
 
@@ -26,44 +27,39 @@ bool Object::read_mtl(string mtl_file)
 	{
 		if (type == "newmtl")
 		{
-			if (flag)
-			{
-				//material_table.insert(make_pair(material_name, material));
-				material = mtl_param();
-			}
-			else flag = true;
-
 			file >> material_name;
-			material.name = material_name;
+			material = new mtl_param();
+			material->name = material_name;
+			_mtl_map.insert(make_pair(material_name, material));
 			cout << "---" << material_name << endl;
 		}
 		else if (type == "Ka")// ambient
 		{
-			file >> material.Ka.x >> material.Ka.y >> material.Ka.z;
+			file >> material->Ka.x >> material->Ka.y >> material->Ka.z;
 		}
 		else if (type == "Kd")// duffuse
 		{
-			file >> material.Kd.x >> material.Kd.y >> material.Kd.z;
+			file >> material->Kd.x >> material->Kd.y >> material->Kd.z;
 		}
 		else if (type == "Ks")// specular
 		{
-			file >> material.Ks.x >> material.Ks.y >> material.Ks.z;
+			file >> material->Ks.x >> material->Ks.y >> material->Ks.z;
 		}
 		else if (type == "Tf")// transmission
 		{
-			file >> material.Tf.x >> material.Tf.y >> material.Tf.z;
+			file >> material->Tf.x >> material->Tf.y >> material->Tf.z;
 		}
 		else if (type == "Ni")// transmission
 		{
-			file >> material.Ni;
+			file >> material->Ni;
 		}
 		else if (type == "Ns")// transmission
 		{
-			file >> material.Ns;
+			file >> material->Ns;
 		}
 		else if (type == "illum")// transmission
 		{
-			file >> material.illum;
+			file >> material->illum;
 		}
 		else
 		{
@@ -72,7 +68,14 @@ bool Object::read_mtl(string mtl_file)
 	}
 	cout << endl;
 
-	//if (flag) material_table.insert(make_pair(material_name, material));//插入最后一种材料
+	material = new mtl_param();
+	material_name = "lambert11SG";
+	material->name = "lambert11SG";
+	material->Kd = vec3(0.67, 0.67, 0.67);
+	material->Ka = vec3(0.00, 0.00, 0.00);
+	material->Tf = vec3(1.00, 1.00, 1.00);
+	material->Ni = 1.00;
+	_mtl_map.insert(make_pair(material_name, material));
 
 	return true;
 }
@@ -86,7 +89,7 @@ void Object::read_obj(string obj_file)
 
 	ifstream fin(obj_file);
 	istringstream is;
-	Material* material;
+	mtl_param* mtl_para = nullptr;
 
 	if (!fin) {
 		cout << "Cannot open the obj file :" << obj_file << endl;
@@ -125,7 +128,10 @@ void Object::read_obj(string obj_file)
 		else if (type == "usemtl")
 		{
 			is >> mtlname;
-			cout << "    " << mtlname << endl;
+			mtl_para = _mtl_map.find(mtlname)->second;
+			cout << "    " << mtlname <<" ("<< mtl_para->Kd[0]
+				<< ", " << mtl_para->Kd[1] 
+				<< ", " << mtl_para->Kd[2] <<")"<< endl;
 		}
 		// vertex
 		else if (type == "v")
@@ -169,7 +175,7 @@ void Object::read_obj(string obj_file)
 				if (index >= 3)
 				{
 					scene.push_back(new Triangle(_vertices[vertex_idx[0] - 1], _vertices[vertex_idx[1] - 1],
-						_vertices[vertex_idx[2] - 1], new Lambertian(vec3(random_float_0_1(), random_float_0_1(), random_float_0_1()))));
+						_vertices[vertex_idx[2] - 1], new Diffuse_light(mtl_para->Kd)));
 
 					vertex_idx[1] = vertex_idx[2];
 					vertex_normal_idx[1] = vertex_normal_idx[2];

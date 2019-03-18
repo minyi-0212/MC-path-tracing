@@ -1,5 +1,3 @@
-#define _USE_MATH_DEFINES
-#include <cmath>
 #include "Material.h"
 
 vec3 random_in_unit_sphere()

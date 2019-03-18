@@ -8,8 +8,8 @@ Camera::Camera(vec3& lookfrom, vec3& lookat, vec3& vup, float vfov, float aspect
 		u(normalize(cross(vup, w))),
 		v(cross(w, u));
 	left_lower_corner = lookfrom - half_width * u - half_height * v - w;
-	up = 2 * half_height*v;
-	right = 2 * half_width*u;
+	up = 2 * half_height * v;
+	right = 2 * half_width * u;
 }
 
 #include <iostream>

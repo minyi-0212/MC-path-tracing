@@ -5,6 +5,7 @@
 #include <map>
 #include <glm.hpp>
 #include "Hitable.h"
+#include "Material.h"
 
 struct mtl_param
 {
@@ -36,4 +37,5 @@ private:
 
 	std::vector<glm::vec3> _vertices;//顶点
 	std::vector<glm::vec3> _normals;//法向量
+	std::map<std::string, mtl_param*> _mtl_map;
 };

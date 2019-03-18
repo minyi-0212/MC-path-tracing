@@ -5,8 +5,6 @@
 
 using std::vector;
 
-vec3 random_in_unit_sphere();
-
 class Material
 {
 public:

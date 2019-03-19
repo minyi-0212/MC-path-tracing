@@ -12,26 +12,38 @@
 using std::cout;
 using std::endl;
 
-vec3 color(const Ray& r, Hitable& object_list, const int depth)
+vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 {
 	// the color for hit
-	hit_record rec;
-	if (object_list.hit(r, 0.001, INT_MAX, rec))
+	hit_record hit_rec;
+	if (object_list.hit(r, 0.001, INT_MAX, hit_rec))
 	{
 		float pdf_value;
-		Ray scattered;
-		vec3 attenuation;
-		if (depth < 50 && rec.material_ptr->scatter(r, rec, attenuation, scattered, pdf_value))
+		scatter_record scatter_rec;
+		if (depth < 50 && hit_rec.material_ptr->scatter(r, hit_rec, scatter_rec))
 		{
-			//cout <<depth << " : " << attenuation[0]<< attenuation[1]<< attenuation[2] << endl;
-			PDF_cos pdf(rec.normal);
-			scattered = Ray(rec.p, pdf.generate_random_d());
-			pdf_value = pdf.value(scattered.direction());
-			return rec.material_ptr->emitted() + attenuation * rec.material_ptr->scattering_pdf(r, rec, scattered) * 
-				color(scattered, object_list, depth + 1) / pdf_value;
+			cout << "depth" << depth << endl;
+			if (scatter_rec.is_specular)
+			{
+				return scatter_rec.albedo*color(scatter_rec.specular_ray, object_list, light, depth + 1);
+			}
+			else
+			{
+				PDF_to_light pdf_light(light, hit_rec.p);
+				PDF_mix pdf(&pdf_light, scatter_rec.pdf_ptr);
+				Ray scattered;
+				//do
+				//{
+					scattered = Ray(hit_rec.p, pdf.generate_random_d());
+					pdf_value = pdf.value(scattered.direction());
+				//} while (pdf_value == 0);
+				cout << pdf_value << endl;
+				return hit_rec.material_ptr->emitted() + scatter_rec.albedo * hit_rec.material_ptr->scattering_pdf(r, hit_rec, scattered) *
+					color(scattered, object_list, light, depth + 1) / pdf_value;
+			}
 		}
 		else
-			return rec.material_ptr->emitted();
+			return hit_rec.material_ptr->emitted();
 	}
 	else
 		return vec3(0);
@@ -111,11 +123,13 @@ void output_ppm()
 		vup(0.0, 1.0, 0.0);
 	Camera cam(lookfrom, lookat, vup, 50., float(nx) / float(ny));
 	Object obj("./scenes/Scene02/room.obj");
-	obj.scene.push_back(new Sphere(vec3(0.0, 1.589, -1.274), 0.2, new Diffuse_light(vec3(50, 50, 40))));
+	//obj.scene.push_back(new Sphere(vec3(0.0, 1.589, -1.274), 0.2, new Diffuse_light(vec3(50, 50, 40))));
+	//Sphere light(vec3(0.0, 1.589, -1.274), 0.2, new Diffuse_light(vec3(50, 50, 40)));
+	RectXZ light(-1, 1, -1, 1, 1.589, nullptr);
 	Bvh bvh(obj.scene, 0.0, 1.0);
 #endif
 
-	std::ofstream fout("./output2/MC-1.ppm");
+	std::ofstream fout("./output2/MC-direct_light.ppm");
 	fout << "P3" << endl << nx << " " << ny << endl << 255 << endl; //P is capital
 	Performance p;
 	p.start();
@@ -133,7 +147,7 @@ void output_ppm()
 			{
 				float u = (float(i) + random_float_0_1()) / float(nx),
 					v = (float(j) + random_float_0_1()) / float(ny);
-				rgb += color(cam.get_ray(u, v), bvh, 0);
+				rgb += color(cam.get_ray(u, v), bvh, light, 0);
 			}
 			rgb /= ns;
 			rgb = sqrt(rgb);

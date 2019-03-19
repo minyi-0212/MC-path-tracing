@@ -10,12 +10,15 @@ vec3 random_in_unit_sphere()
 }
 
 bool Lambertian::scatter(const Ray& r_in, const hit_record& rec,
-	vec3& attenuation, Ray& scattered, float& pdf)
+	scatter_record& scatter_rec)
 {
 	vec3 s = rec.p + rec.normal + random_in_unit_sphere();
-	scattered = Ray(rec.p, normalize(s-rec.p));
-	attenuation = albedo;
-	pdf = dot(rec.normal, scattered.direction()) / M_PI; // cos¦È
+	//scattered = Ray(rec.p, normalize(s-rec.p));
+	//attenuation = albedo;
+	//pdf = dot(rec.normal, scattered.direction()) / M_PI; // cos¦È
+	scatter_rec.is_specular = false;
+	scatter_rec.albedo = albedo;
+	scatter_rec.pdf_ptr = new PDF_cos(rec.normal);
 	return true;
 }
 
@@ -33,12 +36,14 @@ vec3 reflect(const vec3& v, const vec3& n)
 	return v - 2 * dot(v, n)*n;
 }
 
-bool Metal::scatter(const Ray& r_in, const hit_record& rec, vec3& attenuation, Ray& scattered) const
+bool Metal::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& scatter_rec) const
 {
-	vec3 ref = reflect(normalize(r_in.direction()), rec.normal);
-	attenuation = albedo;
-	scattered = Ray(rec.p, ref + fuzzier * random_in_unit_sphere());
-	return (dot(scattered.direction(), rec.normal) >0);
+	vec3 ref = reflect(normalize(r_in.direction()), hit_rec.normal);
+	scatter_rec.is_specular = true;
+	scatter_rec.albedo = albedo;
+	scatter_rec.specular_ray = Ray(hit_rec.p, ref + fuzzier * random_in_unit_sphere());
+	scatter_rec.pdf_ptr = nullptr;
+	return true;
 }
 
 bool refract(const vec3& v, const vec3& n, float ni_over_nt, vec3& refracted)

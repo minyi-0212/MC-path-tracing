@@ -88,6 +88,7 @@ public:
 	}
 	virtual float  pdf_value(const vec3& origin, const vec3& v) const;
 	virtual vec3 random(const vec3& origin) const;
+private:
 	Material  *material;
 	float x0, x1, z0, z1, k;
 };

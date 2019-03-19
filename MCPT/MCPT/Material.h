@@ -1,20 +1,29 @@
 #pragma once
 #include "Ray.h"
-#include "Hitable.h"
+#include "PDF.h"
 #include <vector>
 
 using std::vector;
+
+struct scatter_record
+{
+	bool is_specular;
+	Ray specular_ray; // direction
+	vec3 albedo; // attenuation
+	PDF* pdf_ptr;
+};
 
 class Material
 {
 public:
 	virtual bool scatter(const Ray& r_in, const hit_record& rec,
-		vec3& attenuation, Ray& scattered, float& pdf)
+		scatter_record& scatter_rec)
 	{
 		return false;
-	} // attenuation:less scattered:direction
+	}
+	// directional distribution
 	virtual float scattering_pdf(const Ray& r_in, const hit_record& rec,
-		const Ray& scattered) // directional distribution
+		const Ray& scattered)
 	{
 		return false;
 	}
@@ -26,7 +35,7 @@ class Lambertian :public Material
 public:
 	Lambertian(const vec3& a):albedo(a){}
 	virtual bool scatter(const Ray& r_in, const hit_record& rec,
-		vec3& attenuation, Ray& scattered, float& pdf);
+		scatter_record& scatter_rec);
 	virtual float scattering_pdf(const Ray& r_in, const hit_record& rec,
 		const Ray& scattered);
 private:
@@ -40,7 +49,7 @@ public:
 	{
 		fuzzier = f > 1 ? 1 : f;
 	}
-	virtual bool scatter(const Ray& r_in, const hit_record& rec, vec3& attenuation, Ray& scattered) const;
+	virtual bool scatter(const Ray& r_in, const hit_record& rec, scatter_record& scatter_rec) const;
 private:
 	vec3 albedo;
 	float fuzzier;

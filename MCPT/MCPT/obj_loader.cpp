@@ -175,7 +175,7 @@ void Object::read_obj(string obj_file)
 				if (index >= 3)
 				{
 					scene.push_back(new Triangle(_vertices[vertex_idx[0] - 1], _vertices[vertex_idx[1] - 1],
-						_vertices[vertex_idx[2] - 1], new Diffuse_light(mtl_para->Kd)));
+						_vertices[vertex_idx[2] - 1], new Lambertian(mtl_para->Kd)));
 
 					vertex_idx[1] = vertex_idx[2];
 					vertex_normal_idx[1] = vertex_normal_idx[2];

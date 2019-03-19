@@ -34,3 +34,16 @@ vec3 PDF_to_light::generate_random_d() const
 {
 	return obj->random(origin);
 }
+
+float PDF_mix::value(const vec3& direction) const
+{
+	return 0.5*_p0->value(direction) + 0.5*_p1->value(direction);
+}
+
+vec3 PDF_mix::generate_random_d() const
+{
+	if (random_float_0_1() < 0.5)
+		return _p0->generate_random_d();
+	else
+		return _p1->generate_random_d();
+}

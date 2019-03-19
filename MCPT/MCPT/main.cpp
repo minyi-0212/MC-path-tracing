@@ -20,24 +20,24 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 	{
 		float pdf_value;
 		scatter_record scatter_rec;
-		if (depth < 50 && hit_rec.material_ptr->scatter(r, hit_rec, scatter_rec))
+		if (depth < 10 && hit_rec.material_ptr->scatter(r, hit_rec, scatter_rec))
 		{
-			cout << "depth" << depth << endl;
+			//cout << "depth" << depth << endl;
 			if (scatter_rec.is_specular)
 			{
 				return scatter_rec.albedo*color(scatter_rec.specular_ray, object_list, light, depth + 1);
 			}
 			else
 			{
+				/*cout << hit_rec.normal[0] << " "
+					<< hit_rec.normal[1] << " "
+					<< hit_rec.normal[2] << " " << endl;*/
 				PDF_to_light pdf_light(light, hit_rec.p);
 				PDF_mix pdf(&pdf_light, scatter_rec.pdf_ptr);
 				Ray scattered;
-				//do
-				//{
-					scattered = Ray(hit_rec.p, pdf.generate_random_d());
-					pdf_value = pdf.value(scattered.direction());
-				//} while (pdf_value == 0);
-				cout << pdf_value << endl;
+				scattered = Ray(hit_rec.p, pdf.generate_random_d());
+				pdf_value = pdf.value(scattered.direction());
+				//cout << dot(hit_rec.normal, scattered.direction()) << " " << pdf_value << endl;
 				return hit_rec.material_ptr->emitted() + scatter_rec.albedo * hit_rec.material_ptr->scattering_pdf(r, hit_rec, scattered) *
 					color(scattered, object_list, light, depth + 1) / pdf_value;
 			}
@@ -125,7 +125,8 @@ void output_ppm()
 	Object obj("./scenes/Scene02/room.obj");
 	//obj.scene.push_back(new Sphere(vec3(0.0, 1.589, -1.274), 0.2, new Diffuse_light(vec3(50, 50, 40))));
 	//Sphere light(vec3(0.0, 1.589, -1.274), 0.2, new Diffuse_light(vec3(50, 50, 40)));
-	RectXZ light(-1, 1, -1, 1, 1.589, nullptr);
+	RectXZ light(-0.2, 0.2, -0.2, 0.2, 1.589, new Diffuse_light(vec3(5, 5, 4)));
+	obj.scene.push_back(&light);
 	Bvh bvh(obj.scene, 0.0, 1.0);
 #endif
 

@@ -19,10 +19,13 @@ float PDF_cos::value(const vec3& direction) const
 		return 0;
 }
 
+//#include <iostream>
 vec3 PDF_cos::generate_random_d() const
 {
 	vec3 tmp = random_cos_direction();
-	return _frame.local(tmp);
+	tmp = _frame.local(tmp);
+	//std::cout <<"pdf_cos: " << tmp[0] <<" "<< tmp[1] <<" "<< tmp[2] << std::endl;
+	return tmp;
 }
 
 float PDF_to_light::value(const vec3& direction) const
@@ -32,7 +35,10 @@ float PDF_to_light::value(const vec3& direction) const
 
 vec3 PDF_to_light::generate_random_d() const
 {
-	return obj->random(origin);
+	vec3 tmp = obj->random(origin);
+	//std::cout << "pdf_cos: " << tmp[0] << " " << tmp[1] << " " << tmp[2] << std::endl;
+
+	return tmp;
 }
 
 float PDF_mix::value(const vec3& direction) const

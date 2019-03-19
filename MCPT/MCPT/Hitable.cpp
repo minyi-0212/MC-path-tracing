@@ -231,6 +231,9 @@ float RectXZ::pdf_value(const vec3& origin, const vec3& v) const
 vec3 RectXZ::random(const vec3& origin) const
 {
 	vec3 random_point = vec3(x0 + random_float_0_1()*(x1 - x0), k, z0 + random_float_0_1()*(z1 - z0));
+	/*std::cout <<"rect xz: "<< (random_point - origin)[0] << " "
+		<< (random_point - origin)[1] << " "
+		<< (random_point - origin)[2] << " " << std::endl;*/
 	return random_point - origin;
 }
 

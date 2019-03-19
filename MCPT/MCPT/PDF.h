@@ -22,7 +22,7 @@ public:
 	{
 		axis[2] = normalize(n);
 		vec3 tmp;
-		if (fabs(axis[2][0] > 0.9))
+		if (fabs(axis[2][0]) > 0.9)
 			tmp = vec3(0, 1, 0);
 		else
 			tmp = vec3(1, 0, 0);

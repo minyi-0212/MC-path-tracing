@@ -11,6 +11,14 @@ struct scatter_record
 	Ray specular_ray; // direction
 	vec3 albedo; // attenuation
 	PDF* pdf_ptr;
+
+	/*~scatter_record()
+	{
+		if (pdf_ptr != nullptr)
+		{
+			delete pdf_ptr;
+		}
+	}*/
 };
 
 class Material

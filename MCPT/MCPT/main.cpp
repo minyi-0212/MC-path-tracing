@@ -17,7 +17,7 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 	{
 		float pdf_value;
 		scatter_record scatter_rec;
-		if (depth < 50 && hit_rec.material_ptr->scatter(r, hit_rec, scatter_rec))
+		if (depth < 10 && hit_rec.material_ptr->scatter(r, hit_rec, scatter_rec))
 		{
 			//cout << "depth" << depth << endl;
 			if (scatter_rec.is_specular)
@@ -119,17 +119,23 @@ void output_ppm()
 #endif
 
 #ifdef scene02
-	int nx = 512, ny = 512, ns = 100;
+	int nx = 512, ny = 512, ns = 10;
 	vec3 lookfrom(0.0, 0.0, 4),
 		lookat(0.0, 0.0, 0.0),
 		vup(0.0, 1.0, 0.0);
 	Camera cam(lookfrom, lookat, vup, 50., float(nx) / float(ny));
 	Object obj("./scenes/Scene02/room.obj");
 	//obj.scene.push_back(new Sphere(vec3(0.0, 1.589, -1.274), 0.2, new Diffuse_light(vec3(50, 50, 40))));
-	//Sphere light(vec3(0.0, 1.589, -1.274), 0.2, new Diffuse_light(vec3(50, 50, 40)));
-	RectXZ light(-0.2, 0.2, -0.2, 0.2, 1.589, new Diffuse_light(vec3(50, 50, 40)));
-	obj.scene.push_back(&light);
+	//Sphere light_sphere(vec3(0.0, 1.589, -1.274), 0.2, new Diffuse_light(vec3(50, 50, 40)));
+	RectXZ light_rect(-0.2, 0.2, -0.2, 0.2, 1.589, new Diffuse_light(vec3(50, 50, 40)));
+	obj.scene.push_back(&light_rect);
 	Bvh bvh(obj.scene, 0.0, 1.0);
+
+	// light
+	list<Hitable*> list;
+	list.push_back(&light_rect);
+	//list.push_back(&light_sphere);
+	Hitable_list light(list);
 #endif
 
 	std::ofstream fout("./output2/MC-direct_light.ppm");

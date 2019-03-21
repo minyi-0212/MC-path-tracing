@@ -1,7 +1,8 @@
 #pragma once
-#include <list>
 #include "Ray.h"
 #include "AABB.h"
+#include "OrthonormalBases.h"
+#include <list>
 using std::list;
 
 class Material;
@@ -35,6 +36,8 @@ public:
 	Sphere(vec3 center, float radius, Material* const material):center(center), radius(radius), material(material){}
 	virtual bool hit(const Ray& r, float t_min, float t_max, hit_record& rec) const;
 	virtual bool bounding_box(float t0, float t1, AABB& box) const;
+	virtual float pdf_value(const vec3& origin, const vec3& v)  const;
+	virtual vec3 random(const vec3& origin) const;
 private:
 	vec3 center;
 	float radius;
@@ -49,9 +52,11 @@ public:
 	Hitable_list(list<Hitable*>& l) :l(l) {}
 	virtual bool hit(const Ray& r, float t_min, float t_max, hit_record& rec) const;
 	virtual bool bounding_box(float t0, float t1, AABB& box) const;
+	virtual float  pdf_value(const vec3& o, const vec3& v) const;
+	virtual vec3 random(const vec3& o) const;
 
 private:
-	list<Hitable*> l;
+	mutable list<Hitable*> l;
 };
 
 // bvh -- kdtree

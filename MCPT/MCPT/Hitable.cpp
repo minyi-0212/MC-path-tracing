@@ -1,5 +1,4 @@
 #include "Hitable.h"
-#include <iostream>
 #include <algorithm>
 
 #define min3(a,b,c) __min(a,__min(b,c))
@@ -47,6 +46,38 @@ bool Sphere::bounding_box(float t0, float t1, AABB& box) const
 	return true;
 }
 
+float Sphere::pdf_value(const vec3& origin, const vec3& v)  const
+{
+	hit_record hit_rec;
+	if (this->hit(Ray(origin, v), 0.001, INT_MAX, hit_rec))
+	{
+		float cos_theta_max = sqrt(1 - radius * radius / (length(center - origin)*length(center - origin))),
+			solid_angle = 2 * M_PI*(1 - cos_theta_max);
+		return  1 / solid_angle;
+	}
+	else
+		return 0;
+}
+
+inline vec3 random_to_sphere(float radius, float distance_square)
+{
+	float r1 = random_float_0_1(),
+		r2 = random_float_0_1(),
+		z = 1 + r2 * (sqrt(1 - radius * radius / distance_square) - 1),
+		phi = 2 * M_PI*r1;
+	return vec3(cos(phi)*sqrt(1 - z * z), sin(phi)*sqrt(1 - z * z), z);
+}
+
+vec3 Sphere::random(const vec3& origin) const
+{
+	vec3 direction = center - origin;
+	float distance_square = length(direction)*length(direction);
+	OrthonormalBases frame;
+	frame.build_frame(direction);
+	vec3 tmp(random_to_sphere(radius, distance_square));
+	return frame.local(tmp);
+}
+
 
 bool Hitable_list::hit(const Ray& r, float t_min, float t_max, hit_record& rec) const
 {
@@ -84,6 +115,24 @@ bool Hitable_list::bounding_box(float t0, float t1, AABB& box) const
 			return false;
 	}
 	return true;
+}
+
+float Hitable_list::pdf_value(const vec3 & o, const vec3 & v) const
+{
+	float weight = 1.0 / l.size();
+	float sum = 0;
+	for (auto object : l)
+		sum += weight * object->pdf_value(o, v);
+	return sum;
+}
+
+vec3 Hitable_list::random(const vec3 & o) const
+{
+	int index = floor(random_float_0_1() * l.size());
+	list<Hitable*>::iterator iter = l.begin();
+	if(index!=0 && index != l.size())
+		advance(iter, index);
+	return (*iter)->random(o);
 }
 
 

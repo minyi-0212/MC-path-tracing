@@ -22,6 +22,8 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 			//cout << "depth" << depth << endl;
 			if (scatter_rec.is_specular)
 			{
+				if (isnan(scatter_rec.specular_ray.direction()[0]))
+					cout << "specular_ray direction is nan" << endl;
 				return scatter_rec.albedo*color(scatter_rec.specular_ray, object_list, light, depth + 1);
 			}
 			else
@@ -35,6 +37,8 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 					pdf_value = pdf.value(scattered.direction());
 					if (isnan(scattered.direction()[0]))
 						cout << "s nan" << endl;
+					if (isnan(pdf_value))
+						cout << "pdf nan" << endl;
 				} while (pdf_value == 0);
 				/*if (pdf_value == 0)
 				{
@@ -42,6 +46,14 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 					cout << hit_rec.normal << "¡¤" << tmp << endl;
 					cout << dot(hit_rec.normal, scattered.direction()) << " " << pdf_value << endl;
 				}*/
+				if (isnan(hit_rec.material_ptr->emitted())[0])
+					cout << "emitted is nan" << endl;
+				if (isnan(scatter_rec.albedo[0]))
+					cout << "albedo is nan" << endl;
+				if (isnan(hit_rec.material_ptr->scattering_pdf(r, hit_rec, scattered)))
+					cout << "scatter_pdf is nan" << endl;
+				if (pdf_value == 0)
+					cout << "pdf value" << endl;
 				return hit_rec.material_ptr->emitted() + scatter_rec.albedo * hit_rec.material_ptr->scattering_pdf(r, hit_rec, scattered) *
 					color(scattered, object_list, light, depth + 1) / pdf_value;
 			}
@@ -151,7 +163,7 @@ void output_ppm()
 #endif
 
 #ifdef scene02
-	int nx = 512, ny = 512, ns = 10;
+	int nx = 512, ny = 512, ns = 100;
 	vec3 lookfrom(0.0, 0.0, 4),
 		lookat(0.0, 0.0, 0.0),
 		vup(0.0, 1.0, 0.0);
@@ -171,7 +183,7 @@ void output_ppm()
 #endif
 
 #ifdef OUTPIUT_PPM
-	std::ofstream fout("./output2/MC-direct_light.ppm");
+	std::ofstream fout("./output2/MC-direct_light_sample100.ppm");
 	fout << "P3" << endl << nx << " " << ny << endl << 255 << endl; //P is capital
 #endif
 #ifndef OUTPIUT_PPM
@@ -181,6 +193,7 @@ void output_ppm()
 #endif
 	Performance p;
 	p.start();
+	float max_color = 0;
 	for (int j = ny - 1; j >= 0; j--)
 	{
 		if (j % 100 == 0)
@@ -196,10 +209,22 @@ void output_ppm()
 				float u = (float(i) + random_float_0_1()) / float(nx),
 					v = (float(j) + random_float_0_1()) / float(ny);
 				rgb += color(cam.get_ray(u, v), bvh, light, 0);
+				/*if (i == 207 && j == 511 && s ==1)
+					cout << "debug here" << i << " " << j <<" " << s<< endl;
+				vec3 tmp(color(cam.get_ray(u, v), bvh, light, 0));
+				if (isnan(tmp[0]))
+					cout << "nan" << i << " " << j <<" " <<s<< endl;*/
 			}
 			rgb /= ns;
 			rgb = sqrt(rgb);
 #ifdef OUTPIUT_PPM
+			if (rgb[0] > max_color)
+				max_color = rgb[0];
+			if (rgb[1] > max_color)
+				max_color = rgb[1];
+			if (rgb[2] > max_color)
+				max_color = rgb[2];
+
 			fout << int(255.99*rgb[0]) << " " << int(255.99*rgb[1]) << " " << int(255.99*rgb[2]) << endl;
 #endif
 #ifndef OUTPIUT_PPM
@@ -210,6 +235,7 @@ void output_ppm()
 		}
 	}
 	fout.close();
+	cout << "max_color : " << int(255.99*max_color) << endl;
 }
 
 int main(int argc, char *argv[])

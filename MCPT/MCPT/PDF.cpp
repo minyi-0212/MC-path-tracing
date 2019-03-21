@@ -12,6 +12,8 @@ inline vec3 random_cos_direction()
 
 float PDF_cos::value(const vec3& direction) const
 {
+	if (isnan(_frame[0][0]))
+		cout << "pdf_cos frame nan" << endl;
 	float cos = dot(normalize(direction), _frame[2]);
 	if (cos > 0)
 		return cos / M_PI;
@@ -24,7 +26,8 @@ vec3 PDF_cos::generate_random_d() const
 {
 	vec3 tmp = random_cos_direction();
 	tmp = _frame.local(tmp);
-	//std::cout <<"pdf_cos: " << tmp[0] <<" "<< tmp[1] <<" "<< tmp[2] << std::endl;
+	if (isnan(tmp[0]))
+		std::cout << "pdf_cos: " << tmp[0] << " " << tmp[1] << " " << tmp[2] << std::endl;
 	return tmp;
 }
 
@@ -36,7 +39,8 @@ float PDF_to_light::value(const vec3& direction) const
 vec3 PDF_to_light::generate_random_d() const
 {
 	vec3 tmp = obj->random(origin);
-	//std::cout << "pdf_cos: " << tmp[0] << " " << tmp[1] << " " << tmp[2] << std::endl;
+	if(isnan(tmp[0]))
+		std::cout << "pdf_light: " << tmp[0] << " " << tmp[1] << " " << tmp[2] << std::endl;
 
 	return tmp;
 }

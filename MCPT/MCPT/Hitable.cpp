@@ -49,22 +49,30 @@ bool Sphere::bounding_box(float t0, float t1, AABB& box) const
 float Sphere::pdf_value(const vec3& origin, const vec3& v)  const
 {
 	hit_record hit_rec;
-	if (this->hit(Ray(origin, v), 0.001, INT_MAX, hit_rec))
+	if (!this->hit(Ray(origin, v), 0.001, INT_MAX, hit_rec) || (radius / length(center - origin))>1)
+		return 0;
+	else
+	//if (this->hit(Ray(origin, v), 0.001, INT_MAX, hit_rec))
 	{
 		float cos_theta_max = sqrt(1 - radius * radius / (length(center - origin)*length(center - origin))),
 			solid_angle = 2 * M_PI*(1 - cos_theta_max);
+		if (isnan(cos_theta_max))
+			cout << "sphere light pdf value is nan " << endl;
 		return  1 / solid_angle;
 	}
-	else
-		return 0;
+	/*else
+		return 0;*/
 }
 
 inline vec3 random_to_sphere(float radius, float distance_square)
 {
+	float cos_theta = radius / distance_square;
+	if (cos_theta > 1)
+		return vec3(0);
 	float r1 = random_float_0_1(),
 		r2 = random_float_0_1(),
 		z = 1 + r2 * (sqrt(1 - radius * radius / distance_square) - 1),
-		phi = 2 * M_PI*r1;
+		phi = 2 * M_PI * r1;
 	return vec3(cos(phi)*sqrt(1 - z * z), sin(phi)*sqrt(1 - z * z), z);
 }
 
@@ -74,9 +82,9 @@ vec3 Sphere::random(const vec3& origin) const
 	float distance_square = length(direction)*length(direction);
 	OrthonormalBases frame;
 	frame.build_frame(direction);
-	if (isnan(frame[0][0]))
-		cout << "in sphere nan" << endl;
 	vec3 tmp(random_to_sphere(radius, distance_square));
+	if (isnan(tmp[0]))
+		cout << "sphere: nan - "<<tmp <<" "<< radius <<" "<<distance_square<< endl;
 	return frame.local(tmp);
 }
 

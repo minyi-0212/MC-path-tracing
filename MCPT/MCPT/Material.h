@@ -35,7 +35,7 @@ public:
 	{
 		return false;
 	}
-	virtual vec3 emitted() { return vec3(0); }
+	virtual vec3 emitted() const { return vec3(0); }
 };
 
 class Lambertian :public Material
@@ -81,7 +81,7 @@ public:
 	{
 		return false;
 	};
-	virtual vec3 emitted() { return Le; };
+	virtual vec3 emitted() const { return Le; };
 
 private:
 	vec3 Le;

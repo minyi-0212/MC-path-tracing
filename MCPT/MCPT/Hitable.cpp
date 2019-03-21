@@ -74,6 +74,8 @@ vec3 Sphere::random(const vec3& origin) const
 	float distance_square = length(direction)*length(direction);
 	OrthonormalBases frame;
 	frame.build_frame(direction);
+	if (isnan(frame[0][0]))
+		cout << "in sphere nan" << endl;
 	vec3 tmp(random_to_sphere(radius, distance_square));
 	return frame.local(tmp);
 }

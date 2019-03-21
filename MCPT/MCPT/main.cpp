@@ -33,6 +33,8 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 				{
 					scattered = Ray(hit_rec.p, pdf.generate_random_d());
 					pdf_value = pdf.value(scattered.direction());
+					if (isnan(scattered.direction()[0]))
+						cout << "s nan" << endl;
 				} while (pdf_value == 0);
 				/*if (pdf_value == 0)
 				{
@@ -81,17 +83,28 @@ void random_scene(list<Hitable*>& list)
 		}
 	}
 
-	//list.push_back(new Sphere(vec3(-4, 1, 0), 0.2, new Lambertian(vec3(0.4, 0.2, 0.1))));
+	list.push_back(new Sphere(vec3(-4, 1, 0), 0.2, new Lambertian(vec3(0.8, 0.1, 0.1))));
 	//list.push_back(new Sphere(vec3(4, 1, 0), 1.0, new Metal(vec3(0.7, 0.6, 0.5), 0.0)));
-	//list.push_back(new Sphere(vec3(0, 7, 0), 2.0, new Diffuse_light(vec3(4))));
+	//list.push_back(new Sphere(vec3(0, -1, 0), 2.0, new Diffuse_light(vec3(4))));
 	//list.push_back(new RectXY(3, 5, 1, 2, -2, new Diffuse_light(vec3(4))));
-	list.push_back(new Triangle(vec3(-4, 1, 0), vec3(4, 1, 0), vec3(0, 2, 0), new Lambertian(vec3(0.4, 0.8, 0.1))));
+	/*list.push_back(new Triangle(vec3(-4, 1, 0), vec3(4, 1, 0), vec3(0, 2, 0), new Lambertian(vec3(0.4, 0.8, 0.1))));
 	list.push_back(new Triangle(vec3(-2, 1, 0), vec3(0, 1, 0), vec3(-1, 2, 0), new Lambertian(vec3(0.8, 0.2, 0.1))));
-	list.push_back(new Triangle(vec3(0, 1, 0), vec3(1, 1, 0), vec3(0, -1, 0), new Lambertian(vec3(0.4, 0.2, 0.8))));
+	list.push_back(new Triangle(vec3(0, 1, 0), vec3(1, 1, 0), vec3(0, -1, 0), new Lambertian(vec3(0.4, 0.2, 0.8))));*/
+}
+
+bool IsLittleEndian() {
+	int a = 0x1234;
+	char c = *(char *)&a;
+	if (c == 0x34) {
+		return true;
+	}
+	return false;
 }
 
 //#define scene_random
+//#define scene01
 #define scene02
+#define OUTPIUT_PPM
 void output_ppm()
 {
 #ifdef scene_random
@@ -101,21 +114,40 @@ void output_ppm()
 	int nx = 1200, ny = 800, ns = 10;
 	vec3 lookfrom(13, 2, 3), lookat(0, 0, 0), vup(0, 1, 0);
 	Camera cam(lookfrom, lookat, vup, 20, float(nx) / float(ny));
-	list<Hitable*> list;
+	list<Hitable*> obj_list;
 	//list.push_back(new Sphere(vec3(-1, 0, -1), -0.45, new Dielectric(1.5)));
-	random_scene(list);
+	random_scene(obj_list);
 	//Hitable_list object_list(list);
-	Bvh bvh(list, 0.0, 1.0);
+	Sphere light_sphere(vec3(0, -1, 0), 2.0, new Diffuse_light(vec3(4,4,3.2)));
+	RectXY light_rect(3, 5, 1, 2, -2, new Diffuse_light(vec3(5,5,4)));
+	obj_list.push_back(&light_sphere);
+	obj_list.push_back(&light_rect);
+	Bvh bvh(obj_list, 0.0, 1.0);
+
+	list<Hitable*> light_list;
+	light_list.push_back(&light_sphere);
+	light_list.push_back(&light_rect);
+	Hitable_list light(light_list);
 #endif
 
 #ifdef scene01
-	int nx = 512, ny = 512, ns = 100;
-	vec3 lookfrom(0.0, 0.0, 4),
-		lookat(0.0, 0.0, 0.0),
+	int nx = 512, ny = 512, ns = 10;
+	vec3 lookfrom(0.0, 0.64, 0.52),
+		lookat(0.0, 0.4, 0.3),
 		vup(0.0, 1.0, 0.0);
-	Camera cam(lookfrom, lookat, vup, 50., float(nx) / float(ny));
+	Camera cam(lookfrom, lookat, vup, 60., float(nx) / float(ny));
 	Object obj("./scenes/Scene01/cup.obj");
+	//obj.scene.push_back(new Sphere(vec3(0.0, 1.589, -1.274), 0.2, new Diffuse_light(vec3(50, 50, 40))));
+	//Sphere light_sphere(vec3(0.0, 1.589, -1.274), 0.2, new Diffuse_light(vec3(50, 50, 40)));
+	RectXZ light_rect(-0.2, 0.2, -0.2, 0.2, 1.589, new Diffuse_light(vec3(40, 40, 40)));
+	obj.scene.push_back(&light_rect);
 	Bvh bvh(obj.scene, 0.0, 1.0);
+
+	// light
+	list<Hitable*> light_list;
+	//list.push_back(&light_rect);
+	light_list.push_back(&light_rect);
+	Hitable_list light(light_list);
 #endif
 
 #ifdef scene02
@@ -126,20 +158,27 @@ void output_ppm()
 	Camera cam(lookfrom, lookat, vup, 50., float(nx) / float(ny));
 	Object obj("./scenes/Scene02/room.obj");
 	//obj.scene.push_back(new Sphere(vec3(0.0, 1.589, -1.274), 0.2, new Diffuse_light(vec3(50, 50, 40))));
-	//Sphere light_sphere(vec3(0.0, 1.589, -1.274), 0.2, new Diffuse_light(vec3(50, 50, 40)));
-	RectXZ light_rect(-0.2, 0.2, -0.2, 0.2, 1.589, new Diffuse_light(vec3(50, 50, 40)));
-	obj.scene.push_back(&light_rect);
+	Sphere light_sphere(vec3(0.0, 1.589, -1.274), 0.2, new Diffuse_light(vec3(50, 50, 40)));
+	//RectXZ light_rect(-0.2, 0.2, -0.2, 0.2, 1.589, new Diffuse_light(vec3(50, 50, 40)));
+	obj.scene.push_back(&light_sphere);
 	Bvh bvh(obj.scene, 0.0, 1.0);
 
 	// light
 	list<Hitable*> list;
-	list.push_back(&light_rect);
-	//list.push_back(&light_sphere);
+	//list.push_back(&light_rect);
+	list.push_back(&light_sphere);
 	Hitable_list light(list);
 #endif
 
+#ifdef OUTPIUT_PPM
 	std::ofstream fout("./output2/MC-direct_light.ppm");
 	fout << "P3" << endl << nx << " " << ny << endl << 255 << endl; //P is capital
+#endif
+#ifndef OUTPIUT_PPM
+	std::ofstream fout("./output2/MC-direct_light.pfm", std::ios::out | std::ios::binary);
+	//cout << (IsLittleEndian() ? -1 : 1) << endl;
+	fout << "PF" << endl << nx << " " << ny << endl << (IsLittleEndian() ? -1 : 1) << endl;
+#endif
 	Performance p;
 	p.start();
 	for (int j = ny - 1; j >= 0; j--)
@@ -160,7 +199,14 @@ void output_ppm()
 			}
 			rgb /= ns;
 			rgb = sqrt(rgb);
+#ifdef OUTPIUT_PPM
 			fout << int(255.99*rgb[0]) << " " << int(255.99*rgb[1]) << " " << int(255.99*rgb[2]) << endl;
+#endif
+#ifndef OUTPIUT_PPM
+			fout.write(reinterpret_cast<char *>(&rgb[0]), sizeof(float));
+			fout.write(reinterpret_cast<char *>(&rgb[1]), sizeof(float));
+			fout.write(reinterpret_cast<char *>(&rgb[2]), sizeof(float));
+#endif
 		}
 	}
 	fout.close();

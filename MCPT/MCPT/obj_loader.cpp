@@ -155,6 +155,8 @@ void Object::read_obj(string obj_file)
 			//f 7/13/13 5/14/14 3/3/15 1/1/16
 			while (is >> type) // 7/13/13
 			{
+				/*if (mtlname != "grey")
+					break;*/
 				//cout << type << endl;
 				strcpy_s(t, type.c_str());
 				p = strtok_s(t, d, &next);

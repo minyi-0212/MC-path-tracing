@@ -18,7 +18,7 @@ bool Lambertian::scatter(const Ray& r_in, const hit_record& rec,
 	//pdf = dot(rec.normal, scattered.direction()) / M_PI; // cos¦È
 	scatter_rec.is_specular = false;
 	scatter_rec.albedo = albedo;
-	scatter_rec.pdf_ptr = new PDF_cos(rec.normal);
+	scatter_rec.pdf_ptr = std::make_shared<PDF_cos>(rec.normal);
 	return true;
 }
 

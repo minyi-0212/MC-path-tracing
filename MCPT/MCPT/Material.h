@@ -2,6 +2,7 @@
 #include "Ray.h"
 #include "PDF.h"
 #include <vector>
+#include <memory.h>
 
 using std::vector;
 
@@ -10,15 +11,7 @@ struct scatter_record
 	bool is_specular;
 	Ray specular_ray; // direction
 	vec3 albedo; // attenuation
-	PDF* pdf_ptr;
-
-	/*~scatter_record()
-	{
-		if (pdf_ptr != nullptr)
-		{
-			delete pdf_ptr;
-		}
-	}*/
+	std::shared_ptr<PDF> pdf_ptr;
 };
 
 class Material
@@ -42,10 +35,8 @@ class Lambertian :public Material
 {
 public:
 	Lambertian(const vec3& a):albedo(a){}
-	virtual bool scatter(const Ray& r_in, const hit_record& rec,
-		scatter_record& scatter_rec);
-	virtual float scattering_pdf(const Ray& r_in, const hit_record& rec,
-		const Ray& scattered);
+	virtual bool scatter(const Ray& r_in, const hit_record& rec, scatter_record& scatter_rec);
+	virtual float scattering_pdf(const Ray& r_in, const hit_record& rec, const Ray& scattered);
 private:
 	vec3 albedo;
 };

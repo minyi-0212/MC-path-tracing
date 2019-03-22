@@ -17,7 +17,7 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 	{
 		float pdf_value;
 		scatter_record scatter_rec;
-		if (depth < 10 && hit_rec.material_ptr->scatter(r, hit_rec, scatter_rec))
+		if (depth < 50 && hit_rec.material_ptr->scatter(r, hit_rec, scatter_rec))
 		{
 			//cout << "depth" << depth << endl;
 			if (scatter_rec.is_specular)
@@ -28,8 +28,8 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 			}
 			else
 			{
-				PDF_to_light pdf_light(light, hit_rec.p);
-				PDF_mix pdf(&pdf_light, scatter_rec.pdf_ptr);
+				std::shared_ptr<PDF_to_light> pdf_light(new PDF_to_light(light, hit_rec.p));
+				PDF_mix pdf(pdf_light, scatter_rec.pdf_ptr);
 				Ray scattered;
 				do
 				{

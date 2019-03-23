@@ -104,7 +104,7 @@ void Object::read_obj(string obj_file)
 		is.str(line.c_str());
 		is >> type;
 		// load mtl file
-		if (type == "mtllib") 
+		if (type == "mtllib")
 		{
 			is >> mtllib;
 			string mtl_path = obj_file.substr(0, obj_file.find_last_of('/') + 1) + mtllib;
@@ -121,7 +121,7 @@ void Object::read_obj(string obj_file)
 			is >> type;
 			if (type != "default")
 				cout << "obj: " << type << endl;
-			/*if (type == "table") 
+			/*if (type == "table")
 				break;*/
 		}
 		// the using mtl name
@@ -129,9 +129,9 @@ void Object::read_obj(string obj_file)
 		{
 			is >> mtlname;
 			mtl_para = _mtl_map.find(mtlname)->second;
-			cout << "    " << mtlname <<" ("<< mtl_para->Kd[0]
-				<< ", " << mtl_para->Kd[1] 
-				<< ", " << mtl_para->Kd[2] <<")"<< endl;
+			cout << "    " << mtlname << " (" << mtl_para->Kd[0]
+				<< ", " << mtl_para->Kd[1]
+				<< ", " << mtl_para->Kd[2] << ")" << endl;
 		}
 		// vertex
 		else if (type == "v")
@@ -140,13 +140,13 @@ void Object::read_obj(string obj_file)
 			_vertices.push_back(v);
 		}
 		// vertex normal
-		else if (type == "vn") 
+		else if (type == "vn")
 		{
 			is >> vn.x >> vn.y >> vn.z;
 			_normals.push_back(vn);
 		}
 		// face
-		else if (type == "f") 
+		else if (type == "f")
 		{
 			char *p, *next = nullptr;
 			char t[100];
@@ -157,7 +157,7 @@ void Object::read_obj(string obj_file)
 			{
 				/*if (mtlname != "grey")
 					break;*/
-				//cout << type << endl;
+					//cout << type << endl;
 				strcpy_s(t, type.c_str());
 				p = strtok_s(t, d, &next);
 				if (p)

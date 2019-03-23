@@ -12,7 +12,7 @@ bool Sphere::hit(const Ray& r, float t_min, float t_max, hit_record& rec) const
 	float a = dot(r.direction(), r.direction()),
 		b = dot(r.direction(), CA),
 		c = dot(CA, CA) - radius * radius,
-		discriminant = b * b - a*c;
+		discriminant = b * b - a * c;
 	if (discriminant < 0)
 	{
 		return false;
@@ -49,10 +49,10 @@ bool Sphere::bounding_box(float t0, float t1, AABB& box) const
 float Sphere::pdf_value(const vec3& origin, const vec3& v)  const
 {
 	hit_record hit_rec;
-	if (!this->hit(Ray(origin, v), 0.001, INT_MAX, hit_rec) || (radius / length(center - origin))>1)
+	if (!this->hit(Ray(origin, v), 0.001, INT_MAX, hit_rec) || (radius / length(center - origin)) > 1)
 		return 0;
 	else
-	//if (this->hit(Ray(origin, v), 0.001, INT_MAX, hit_rec))
+		//if (this->hit(Ray(origin, v), 0.001, INT_MAX, hit_rec))
 	{
 		float cos_theta_max = sqrt(1 - radius * radius / (length(center - origin)*length(center - origin))),
 			solid_angle = 2 * M_PI*(1 - cos_theta_max);
@@ -84,7 +84,7 @@ vec3 Sphere::random(const vec3& origin) const
 	frame.build_frame(direction);
 	vec3 tmp(random_to_sphere(radius, distance_square));
 	if (isnan(tmp[0]))
-		cout << "sphere: nan - "<<tmp <<" "<< radius <<" "<<distance_square<< endl;
+		cout << "sphere: nan - " << tmp << " " << radius << " " << distance_square << endl;
 	return frame.local(tmp);
 }
 
@@ -106,9 +106,9 @@ bool Hitable_list::hit(const Ray& r, float t_min, float t_max, hit_record& rec) 
 	return hit_anything;
 }
 
-bool Hitable_list::bounding_box(float t0, float t1, AABB& box) const 
+bool Hitable_list::bounding_box(float t0, float t1, AABB& box) const
 {
-	if (l.size() == 0) 
+	if (l.size() == 0)
 		return false;
 	AABB temp_box;
 	bool first_true = l.front()->bounding_box(t0, t1, temp_box);
@@ -140,7 +140,7 @@ vec3 Hitable_list::random(const vec3 & o) const
 {
 	int index = floor(random_float_0_1() * l.size());
 	list<Hitable*>::iterator iter = l.begin();
-	if(index!=0 && index != l.size())
+	if (index != 0 && index != l.size())
 		advance(iter, index);
 	return (*iter)->random(o);
 }
@@ -177,7 +177,7 @@ int box_z_compare(const Hitable* a, const Hitable* b)
 }
 
 Bvh::Bvh(list<Hitable*>& l, float time0, float time1) {
-	int axis = int(3 * random_float_0_1()), 
+	int axis = int(3 * random_float_0_1()),
 		n = l.size();
 	if (axis == 0)
 		l.sort(box_x_compare);
@@ -233,7 +233,7 @@ bool Bvh::hit(const Ray& r, float t_min, float t_max, hit_record& rec) const
 		else
 			return false;
 	}
-	else 
+	else
 		return false;
 }
 
@@ -257,6 +257,25 @@ bool RectXY::hit(const Ray& r, float t0, float t1, hit_record& rec) const {
 	rec.material_ptr = material;
 	rec.normal = vec3(0, 0, 1);
 	return true;
+}
+
+float RectXY::pdf_value(const vec3& origin, const vec3& v) const
+{
+	hit_record rec;
+	if (this->hit(Ray(origin, v), 0.001, FLT_MAX, rec)) {
+		float area = (x1 - x0)*(y1 - y0);
+		float distance_squared = rec.t * rec.t * length(v)* length(v);
+		float cosine = fabs(dot(v, rec.normal) / length(v));
+		return  distance_squared / (cosine * area);
+	}
+	else
+		return 0;
+}
+
+vec3 RectXY::random(const vec3& origin) const
+{
+	vec3 random_point = vec3(x0 + random_float_0_1()*(x1 - x0), k, y0 + random_float_0_1()*(y1 - y0));
+	return random_point - origin;
 }
 
 bool RectXZ::hit(const Ray& r, float t0, float t1, hit_record& rec) const {
@@ -290,9 +309,6 @@ float RectXZ::pdf_value(const vec3& origin, const vec3& v) const
 vec3 RectXZ::random(const vec3& origin) const
 {
 	vec3 random_point = vec3(x0 + random_float_0_1()*(x1 - x0), k, z0 + random_float_0_1()*(z1 - z0));
-	/*std::cout <<"rect xz: "<< (random_point - origin)[0] << " "
-		<< (random_point - origin)[1] << " "
-		<< (random_point - origin)[2] << " " << std::endl;*/
 	return random_point - origin;
 }
 
@@ -309,6 +325,25 @@ bool RectYZ::hit(const Ray& r, float t0, float t1, hit_record& rec) const {
 	rec.material_ptr = material;
 	rec.normal = vec3(1, 0, 0);
 	return true;
+}
+
+float RectYZ::pdf_value(const vec3& origin, const vec3& v) const
+{
+	hit_record rec;
+	if (this->hit(Ray(origin, v), 0.001, FLT_MAX, rec)) {
+		float area = (y1 - y0)*(z1 - z0);
+		float distance_squared = rec.t * rec.t * length(v)* length(v);
+		float cosine = fabs(dot(v, rec.normal) / length(v));
+		return  distance_squared / (cosine * area);
+	}
+	else
+		return 0;
+}
+
+vec3 RectYZ::random(const vec3& origin) const
+{
+	vec3 random_point = vec3(y0 + random_float_0_1()*(y1 - y0), k, z0 + random_float_0_1()*(z1 - z0));
+	return random_point - origin;
 }
 
 
@@ -342,7 +377,7 @@ bool Triangle::hit(const Ray& r, float t_min, float t_max, hit_record& rec) cons
 
 bool Triangle::bounding_box(float t0, float t1, AABB& box) const
 {
-	vec3 low(min3(v0[0], v1[0], v2[0]), 
+	vec3 low(min3(v0[0], v1[0], v2[0]),
 		min3(v0[1], v1[1], v2[1]),
 		min3(v0[2], v1[2], v2[2])),
 		high(max3(v0[0], v1[0], v2[0]),

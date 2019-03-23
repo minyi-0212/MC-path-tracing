@@ -17,6 +17,8 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 	{
 		float pdf_value;
 		scatter_record scatter_rec;
+		vec3 emit = hit_rec.material_ptr->emitted(r, hit_rec);
+		//cout << emit << endl;
 		if (depth < 50 && hit_rec.material_ptr->scatter(r, hit_rec, scatter_rec))
 		{
 			//cout << "depth" << depth << endl;
@@ -46,7 +48,7 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 					cout << hit_rec.normal << "¡¤" << tmp << endl;
 					cout << dot(hit_rec.normal, scattered.direction()) << " " << pdf_value << endl;
 				}*/
-				if (isnan(hit_rec.material_ptr->emitted())[0])
+				if (isnan(emit[0]))
 					cout << "emitted is nan" << endl;
 				if (isnan(scatter_rec.albedo[0]))
 					cout << "albedo is nan" << endl;
@@ -54,12 +56,12 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 					cout << "scatter_pdf is nan" << endl;
 				if (pdf_value == 0)
 					cout << "pdf value" << endl;
-				return hit_rec.material_ptr->emitted() + scatter_rec.albedo * hit_rec.material_ptr->scattering_pdf(r, hit_rec, scattered) *
+				return emit + scatter_rec.albedo * hit_rec.material_ptr->scattering_pdf(r, hit_rec, scattered) *
 					color(scattered, object_list, light, depth + 1) / pdf_value;
 			}
 		}
 		else
-			return hit_rec.material_ptr->emitted();
+			return emit;
 	}
 	else
 		return vec3(0);
@@ -114,9 +116,9 @@ bool IsLittleEndian() {
 }
 
 //#define scene_random
-//#define scene01
-#define scene02
-#define OUTPIUT_PPM
+#define scene_cup
+//#define scene02
+//#define OUTPIUT_PPM
 void output_ppm()
 {
 #ifdef scene_random
@@ -130,8 +132,8 @@ void output_ppm()
 	//list.push_back(new Sphere(vec3(-1, 0, -1), -0.45, new Dielectric(1.5)));
 	random_scene(obj_list);
 	//Hitable_list object_list(list);
-	Sphere light_sphere(vec3(0, -1, 0), 2.0, new Diffuse_light(vec3(4,4,3.2)));
-	RectXY light_rect(3, 5, 1, 2, -2, new Diffuse_light(vec3(5,5,4)));
+	Sphere light_sphere(vec3(0, -1, 0), 2.0, new Diffuse_light(vec3(4, 4, 3.2)));
+	RectXY light_rect(3, 5, 1, 2, -2, new Diffuse_light(vec3(5, 5, 4)));
 	obj_list.push_back(&light_sphere);
 	obj_list.push_back(&light_rect);
 	Bvh bvh(obj_list, 0.0, 1.0);
@@ -142,28 +144,25 @@ void output_ppm()
 	Hitable_list light(light_list);
 #endif
 
-#ifdef scene01
-	int nx = 512, ny = 512, ns = 10;
+#ifdef scene_cup
+	int nx = 512, ny = 512, ns = 100;
 	vec3 lookfrom(0.0, 0.64, 0.52),
 		lookat(0.0, 0.4, 0.3),
 		vup(0.0, 1.0, 0.0);
 	Camera cam(lookfrom, lookat, vup, 60., float(nx) / float(ny));
 	Object obj("./scenes/Scene01/cup.obj");
-	//obj.scene.push_back(new Sphere(vec3(0.0, 1.589, -1.274), 0.2, new Diffuse_light(vec3(50, 50, 40))));
-	//Sphere light_sphere(vec3(0.0, 1.589, -1.274), 0.2, new Diffuse_light(vec3(50, 50, 40)));
-	RectXZ light_rect(-0.2, 0.2, -0.2, 0.2, 1.589, new Diffuse_light(vec3(40, 40, 40)));
+	RectXY light_rect(-2.758771896 - 0.5, -2.758771896 + 0.5, 1.5246 - 0.5, 1.5246 + 0.5, 0, new Diffuse_light(vec3(40, 40, 40)));
 	obj.scene.push_back(&light_rect);
 	Bvh bvh(obj.scene, 0.0, 1.0);
 
 	// light
 	list<Hitable*> light_list;
-	//list.push_back(&light_rect);
 	light_list.push_back(&light_rect);
 	Hitable_list light(light_list);
 #endif
 
 #ifdef scene02
-	int nx = 512, ny = 512, ns = 100;
+	int nx = 512, ny = 512, ns = 300;
 	vec3 lookfrom(0.0, 0.0, 4),
 		lookat(0.0, 0.0, 0.0),
 		vup(0.0, 1.0, 0.0);
@@ -182,12 +181,16 @@ void output_ppm()
 	Hitable_list light(list);
 #endif
 
+#ifdef scene03
+#endif
+
+	std::string filename = "./output2/scene02";
 #ifdef OUTPIUT_PPM
-	std::ofstream fout("./output2/MC-direct_light_sample100.ppm");
+	std::ofstream fout(filename+".ppm");
 	fout << "P3" << endl << nx << " " << ny << endl << 255 << endl; //P is capital
 #endif
 #ifndef OUTPIUT_PPM
-	std::ofstream fout("./output2/MC-direct_light.pfm", std::ios::out | std::ios::binary);
+	std::ofstream fout(filename + ".pfm", std::ios::out | std::ios::binary);
 	//cout << (IsLittleEndian() ? -1 : 1) << endl;
 	fout << "PF" << endl << nx << " " << ny << endl << (IsLittleEndian() ? -1 : 1) << endl;
 #endif
@@ -216,7 +219,7 @@ void output_ppm()
 					cout << "nan" << i << " " << j <<" " <<s<< endl;*/
 			}
 			rgb /= ns;
-			rgb = sqrt(rgb);
+			//rgb = sqrt(rgb);
 #ifdef OUTPIUT_PPM
 			if (rgb[0] > max_color)
 				max_color = rgb[0];

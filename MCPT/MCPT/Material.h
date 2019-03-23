@@ -28,13 +28,13 @@ public:
 	{
 		return false;
 	}
-	virtual vec3 emitted() const { return vec3(0); }
+	virtual vec3 emitted(const Ray& r_in, const hit_record& rec) const { return vec3(0); }
 };
 
 class Lambertian :public Material
 {
 public:
-	Lambertian(const vec3& a):albedo(a){}
+	Lambertian(const vec3& a) :albedo(a) {}
 	virtual bool scatter(const Ray& r_in, const hit_record& rec, scatter_record& scatter_rec);
 	virtual float scattering_pdf(const Ray& r_in, const hit_record& rec, const Ray& scattered);
 private:
@@ -54,7 +54,8 @@ private:
 	float fuzzier;
 };
 
-class Dielectric : public Material {
+class Dielectric : public Material 
+{
 public:
 	Dielectric(float Ni) : Ni(Ni) {}
 	virtual bool scatter(const Ray& r_in, const hit_record& rec, vec3& attenuation, Ray& scattered) const;
@@ -72,7 +73,14 @@ public:
 	{
 		return false;
 	};
-	virtual vec3 emitted() const { return Le; };
+	virtual vec3 emitted(const Ray& r_in, const hit_record& rec) const
+	{
+		/*if (dot(r_in.direction(), rec.normal) > 0)
+			return Le;
+		else
+			return vec3(0);*/
+		return Le;
+	};
 
 private:
 	vec3 Le;

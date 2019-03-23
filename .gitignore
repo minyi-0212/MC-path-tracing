@@ -41,3 +41,12 @@ MCPT/MCPT/x64/Release/
 
 *.ppm
 *.png
+MCPT/MCPT/output2/
+
+MCPT/MCPT/info\.txt
+
+MCPT/MCPT/MCPT\.vcxproj
+
+MCPT/MCPT/MCPT\.vcxproj\.filters
+
+MCPT/MCPT/MCPT\.vcxproj\.user

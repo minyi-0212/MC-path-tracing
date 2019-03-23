@@ -52,7 +52,7 @@ public:
 	Hitable_list(list<Hitable*>& l) :l(l) {}
 	virtual bool hit(const Ray& r, float t_min, float t_max, hit_record& rec) const;
 	virtual bool bounding_box(float t0, float t1, AABB& box) const;
-	virtual float  pdf_value(const vec3& o, const vec3& v) const;
+	virtual float pdf_value(const vec3& o, const vec3& v) const;
 	virtual vec3 random(const vec3& o) const;
 
 private:
@@ -82,6 +82,8 @@ public:
 		box = AABB(vec3(x0, y0, k - 0.0001), vec3(x1, y1, k + 0.0001));
 		return true;
 	}
+	virtual float pdf_value(const vec3& origin, const vec3& v) const;
+	virtual vec3 random(const vec3& origin) const;
 	Material  *material;
 	float x0, x1, y0, y1, k;
 };
@@ -113,6 +115,8 @@ public:
 		box = AABB(vec3(k - 0.0001, y0, z0), vec3(k + 0.0001, y1, z1));
 		return true;
 	}
+	virtual float pdf_value(const vec3& origin, const vec3& v) const;
+	virtual vec3 random(const vec3& origin) const;
 	Material  *material;
 	float y0, y1, z0, z1, k;
 };

@@ -116,8 +116,9 @@ bool IsLittleEndian() {
 }
 
 //#define scene_random
-#define scene_cup
-//#define scene02
+//#define scene_cup
+//#define scene_room
+#define scene_mis
 //#define OUTPIUT_PPM
 void output_ppm()
 {
@@ -153,15 +154,17 @@ void output_ppm()
 	Object obj("./scenes/Scene01/cup.obj");
 	RectXY light_rect(-2.758771896 - 0.5, -2.758771896 + 0.5, 1.5246 - 0.5, 1.5246 + 0.5, 0, new Diffuse_light(vec3(40, 40, 40)));
 	obj.scene.push_back(&light_rect);
+	cout << obj.scene.size() << endl;
 	Bvh bvh(obj.scene, 0.0, 1.0);
 
 	// light
 	list<Hitable*> light_list;
 	light_list.push_back(&light_rect);
 	Hitable_list light(light_list);
+	std::string filename = "./output2/scene01";
 #endif
 
-#ifdef scene02
+#ifdef scene_room
 	int nx = 512, ny = 512, ns = 300;
 	vec3 lookfrom(0.0, 0.0, 4),
 		lookat(0.0, 0.0, 0.0),
@@ -171,6 +174,7 @@ void output_ppm()
 	//obj.scene.push_back(new Sphere(vec3(0.0, 1.589, -1.274), 0.2, new Diffuse_light(vec3(50, 50, 40))));
 	Sphere light_sphere(vec3(0.0, 1.589, -1.274), 0.2, new Diffuse_light(vec3(50, 50, 40)));
 	//RectXZ light_rect(-0.2, 0.2, -0.2, 0.2, 1.589, new Diffuse_light(vec3(50, 50, 40)));
+	cout << obj.scene.size() << endl;
 	obj.scene.push_back(&light_sphere);
 	Bvh bvh(obj.scene, 0.0, 1.0);
 
@@ -179,12 +183,40 @@ void output_ppm()
 	//list.push_back(&light_rect);
 	list.push_back(&light_sphere);
 	Hitable_list light(list);
-#endif
-
-#ifdef scene03
-#endif
-
 	std::string filename = "./output2/scene02";
+#endif
+
+#ifdef scene_mis
+	int nx = 1152, ny = 864, ns = 10;
+	vec3 lookfrom(0.0, 2.0, 15),
+		lookat(0.0, 1.69521, 14.0476),
+		vup(0.0, 0.952421, -0.304787);
+	Camera cam(lookfrom, lookat, vup, 28, float(nx) / float(ny));
+	Object obj("./scenes/Scene03/VeachMIS.obj");
+	Sphere light_sphere1(vec3(-10, 10, 4), 0.5, new Diffuse_light(vec3(800))),
+		light_sphere2(vec3(3.75, 0, 0), 0.033, new Diffuse_light(vec3(901.803))),
+		light_sphere3(vec3(1.25, 0, 0), 0.1, new Diffuse_light(vec3(100))),
+		light_sphere4(vec3(-1.25, 0, 0), 0.3, new Diffuse_light(vec3(11.1111))),
+		light_sphere5(vec3(-3.75, 0, 0), 0.9, new Diffuse_light(vec3(1.23457)));
+	cout << obj.scene.size() << endl;
+	obj.scene.push_back(&light_sphere1);
+	obj.scene.push_back(&light_sphere2);
+	obj.scene.push_back(&light_sphere3);
+	obj.scene.push_back(&light_sphere4);
+	obj.scene.push_back(&light_sphere5);
+	Bvh bvh(obj.scene, 0.0, 1.0);
+
+	// light
+	list<Hitable*> list;
+	list.push_back(&light_sphere1);
+	list.push_back(&light_sphere2);
+	list.push_back(&light_sphere3);
+	list.push_back(&light_sphere4);
+	list.push_back(&light_sphere5);
+	Hitable_list light(list);
+	std::string filename = "./output2/scene03";
+#endif
+
 #ifdef OUTPIUT_PPM
 	std::ofstream fout(filename+".ppm");
 	fout << "P3" << endl << nx << " " << ny << endl << 255 << endl; //P is capital

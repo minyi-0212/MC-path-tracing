@@ -10,7 +10,7 @@ struct scatter_record
 {
 	bool is_specular;
 	Ray specular_ray; // direction
-	vec3 albedo; // attenuation
+	vec3 _albedo; // attenuation
 	std::shared_ptr<PDF> pdf_ptr;
 };
 
@@ -34,54 +34,68 @@ public:
 class Lambertian :public Material
 {
 public:
-	Lambertian(const vec3& a) :albedo(a) {}
+	Lambertian(const vec3& a) :_albedo(a) {}
 	virtual bool scatter(const Ray& r_in, const hit_record& rec, scatter_record& scatter_rec);
 	virtual float scattering_pdf(const Ray& r_in, const hit_record& rec, const Ray& scattered);
 private:
-	vec3 albedo;
+	vec3 _albedo;
 };
 
 class Metal :public Material
 {
 public:
-	Metal(const vec3& a, float f) :albedo(a)
+	Metal(const vec3& a, float f) :_albedo(a)
 	{
-		fuzzier = f > 1 ? 1 : f;
+		_fuzzier = f > 1 ? 1 : f;
 	}
 	virtual bool scatter(const Ray& r_in, const hit_record& rec, scatter_record& scatter_rec) const;
 private:
-	vec3 albedo;
-	float fuzzier;
+	vec3 _albedo;
+	float _fuzzier;
 };
 
-class Dielectric : public Material 
+class Dielectric : public Material
 {
 public:
-	Dielectric(float Ni) : Ni(Ni) {}
+	Dielectric(float _Ni) : _Ni(_Ni) {}
 	virtual bool scatter(const Ray& r_in, const hit_record& rec, vec3& attenuation, Ray& scattered) const;
 
 private:
-	float Ni; // refractive index
+	float _Ni; // refractive index
 };
 
-class Diffuse_light : public Material
+class Light : public Material
 {
 public:
-	Diffuse_light(const vec3& v) :Le(v) {};
+	Light(const vec3& v) :_Le(v) {};
 	virtual bool scatter(const Ray& r_in, const hit_record& rec,
 		vec3& attenuation, Ray& scattered) const
 	{
 		return false;
 	};
-	virtual vec3 emitted(const Ray& r_in, const hit_record& rec) const
-	{
-		/*if (dot(r_in.direction(), rec.normal) > 0)
-			return Le;
-		else
-			return vec3(0);*/
-		return Le;
-	};
+
+	virtual vec3 emitted(const Ray& r_in, const hit_record& rec) const;
 
 private:
-	vec3 Le;
+	vec3 _Le;
+};
+
+struct mtl_param
+{
+	std::string name;
+	float Ns, // shiness
+		Ni; // refractive index
+	int illum;
+	glm::vec3 Ka, Kd, Ks, Tf; // ambient diffuse specular transmission filter
+
+};
+
+class MTL : public Material
+{
+public:
+	MTL(){};
+	virtual bool scatter(const Ray& r_in, const hit_record& rec, scatter_record& scatter_rec);
+	virtual float scattering_pdf(const Ray& r_in, const hit_record& rec, const Ray& scattered);
+
+	mtl_param para;
 };

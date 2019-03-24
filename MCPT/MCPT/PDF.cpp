@@ -22,7 +22,7 @@ float PDF_cos::value(const vec3& direction) const
 }
 
 //#include <iostream>
-vec3 PDF_cos::generate_random_d() const
+vec3 PDF_cos::importance_sampling() const
 {
 	vec3 tmp = random_cos_direction();
 	tmp = _frame.local(tmp);
@@ -36,7 +36,7 @@ float PDF_to_light::value(const vec3& direction) const
 	return obj->pdf_value(origin, direction);
 }
 
-vec3 PDF_to_light::generate_random_d() const
+vec3 PDF_to_light::importance_sampling() const
 {
 	vec3 tmp = obj->random(origin);
 	if (isnan(tmp[0]))
@@ -50,10 +50,10 @@ float PDF_mix::value(const vec3& direction) const
 	return 0.5*_p0->value(direction) + 0.5*_p1->value(direction);
 }
 
-vec3 PDF_mix::generate_random_d() const
+vec3 PDF_mix::importance_sampling() const
 {
 	if (random_float_0_1() < 0.5)
-		return _p0->generate_random_d();
+		return _p0->importance_sampling();
 	else
-		return _p1->generate_random_d();
+		return _p1->importance_sampling();
 }

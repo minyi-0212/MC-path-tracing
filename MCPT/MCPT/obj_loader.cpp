@@ -1,8 +1,6 @@
 #include <fstream>
 #include <sstream>
-#include <iostream>
 #include "obj_loader.h"
-#include "material.h"
 
 using namespace glm;
 using namespace std;
@@ -17,7 +15,7 @@ bool Object::read_mtl(string mtl_file)
 
 	bool flag = false;
 	string material_name;
-	mtl_param* material = nullptr;
+	MTL* material = nullptr;
 	//Material* mtl;
 	string type;
 	int illumination_model;
@@ -28,38 +26,38 @@ bool Object::read_mtl(string mtl_file)
 		if (type == "newmtl")
 		{
 			file >> material_name;
-			material = new mtl_param();
-			material->name = material_name;
+			material = new MTL();
+			material->para.name = material_name;
 			_mtl_map.insert(make_pair(material_name, material));
 			cout << "---" << material_name << endl;
 		}
 		else if (type == "Ka")// ambient
 		{
-			file >> material->Ka.x >> material->Ka.y >> material->Ka.z;
+			file >> material->para.Ka.x >> material->para.Ka.y >> material->para.Ka.z;
 		}
 		else if (type == "Kd")// duffuse
 		{
-			file >> material->Kd.x >> material->Kd.y >> material->Kd.z;
+			file >> material->para.Kd.x >> material->para.Kd.y >> material->para.Kd.z;
 		}
 		else if (type == "Ks")// specular
 		{
-			file >> material->Ks.x >> material->Ks.y >> material->Ks.z;
+			file >> material->para.Ks.x >> material->para.Ks.y >> material->para.Ks.z;
 		}
 		else if (type == "Tf")// transmission
 		{
-			file >> material->Tf.x >> material->Tf.y >> material->Tf.z;
+			file >> material->para.Tf.x >> material->para.Tf.y >> material->para.Tf.z;
 		}
 		else if (type == "Ni")// transmission
 		{
-			file >> material->Ni;
+			file >> material->para.Ni;
 		}
 		else if (type == "Ns")// transmission
 		{
-			file >> material->Ns;
+			file >> material->para.Ns;
 		}
 		else if (type == "illum")// transmission
 		{
-			file >> material->illum;
+			file >> material->para.illum;
 		}
 		else
 		{
@@ -68,14 +66,14 @@ bool Object::read_mtl(string mtl_file)
 	}
 	cout << endl;
 
-	material = new mtl_param();
+	/*material = new MTL();
 	material_name = "lambert11SG";
-	material->name = "lambert11SG";
-	material->Kd = vec3(0.67, 0.67, 0.67);
-	material->Ka = vec3(0.00, 0.00, 0.00);
-	material->Tf = vec3(1.00, 1.00, 1.00);
-	material->Ni = 1.00;
-	_mtl_map.insert(make_pair(material_name, material));
+	material->para.name = "lambert11SG";
+	material->para.Kd = vec3(0.67, 0.67, 0.67);
+	material->para.Ka = vec3(0.00, 0.00, 0.00);
+	material->para.Tf = vec3(1.00, 1.00, 1.00);
+	material->para._Ni = 1.00;
+	_mtl_map.insert(make_pair(material_name, material));*/
 
 	return true;
 }
@@ -89,7 +87,7 @@ void Object::read_obj(string obj_file)
 
 	ifstream fin(obj_file);
 	istringstream is;
-	mtl_param* mtl_para = nullptr;
+	MTL* material = nullptr;
 
 	if (!fin) {
 		cout << "Cannot open the obj file :" << obj_file << endl;
@@ -128,10 +126,8 @@ void Object::read_obj(string obj_file)
 		else if (type == "usemtl")
 		{
 			is >> mtlname;
-			mtl_para = _mtl_map.find(mtlname)->second;
-			cout << "    " << mtlname << " (" << mtl_para->Kd[0]
-				<< ", " << mtl_para->Kd[1]
-				<< ", " << mtl_para->Kd[2] << ")" << endl;
+			material = _mtl_map.find(mtlname)->second;
+			cout << "    " << mtlname << " " << material->para.Kd << endl;
 		}
 		// vertex
 		else if (type == "v")
@@ -157,7 +153,7 @@ void Object::read_obj(string obj_file)
 			{
 				/*if (mtlname != "grey")
 					break;*/
-					//cout << type << endl;
+				//cout << type << endl;
 				strcpy_s(t, type.c_str());
 				p = strtok_s(t, d, &next);
 				if (p)
@@ -176,8 +172,10 @@ void Object::read_obj(string obj_file)
 				index++;
 				if (index >= 3)
 				{
+					/*scene.push_back(new Triangle(_vertices[vertex_idx[0] - 1], _vertices[vertex_idx[1] - 1],
+						_vertices[vertex_idx[2] - 1], new Lambertian(material->para.Kd)));*/
 					scene.push_back(new Triangle(_vertices[vertex_idx[0] - 1], _vertices[vertex_idx[1] - 1],
-						_vertices[vertex_idx[2] - 1], new Lambertian(mtl_para->Kd)));
+						_vertices[vertex_idx[2] - 1], material));
 
 					vertex_idx[1] = vertex_idx[2];
 					vertex_normal_idx[1] = vertex_normal_idx[2];

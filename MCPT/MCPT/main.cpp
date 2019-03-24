@@ -1,8 +1,6 @@
-#include <iostream>
 #include <fstream>
 //#include <glut.h>
 #include <gtc/matrix_transform.hpp>
-#include <math.h>
 #include "Material.h"
 #include "Camera.h"
 #include "obj_loader.h"
@@ -24,9 +22,12 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 			//cout << "depth" << depth << endl;
 			if (scatter_rec.is_specular)
 			{
-				if (isnan(scatter_rec.specular_ray.direction()[0]))
-					cout << "specular_ray direction is nan" << endl;
-				return scatter_rec.albedo*color(scatter_rec.specular_ray, object_list, light, depth + 1);
+				/*if (isnan(scatter_rec.specular_ray.direction()[0]))
+					cout << "specular_ray direction is nan" << endl;*/
+				/*return emit + scatter_rec._albedo *
+					color(Ray(hit_rec.p, scatter_rec.pdf_ptr->importance_sampling()), 
+						object_list, light, depth + 1);*/
+				return scatter_rec._albedo * color(scatter_rec.specular_ray, object_list, light, depth + 1);
 			}
 			else
 			{
@@ -35,12 +36,12 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 				Ray scattered;
 				do
 				{
-					scattered = Ray(hit_rec.p, pdf.generate_random_d());
+					scattered = Ray(hit_rec.p, pdf.importance_sampling());
 					pdf_value = pdf.value(scattered.direction());
-					if (isnan(scattered.direction()[0]))
+					/*if (isnan(scattered.direction()[0]))
 						cout << "s nan" << endl;
 					if (isnan(pdf_value))
-						cout << "pdf nan" << endl;
+						cout << "pdf nan" << endl;*/
 				} while (pdf_value == 0);
 				/*if (pdf_value == 0)
 				{
@@ -48,15 +49,15 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 					cout << hit_rec.normal << "¡¤" << tmp << endl;
 					cout << dot(hit_rec.normal, scattered.direction()) << " " << pdf_value << endl;
 				}*/
-				if (isnan(emit[0]))
+				/*if (isnan(emit[0]))
 					cout << "emitted is nan" << endl;
-				if (isnan(scatter_rec.albedo[0]))
+				if (isnan(scatter_rec._albedo[0]))
 					cout << "albedo is nan" << endl;
 				if (isnan(hit_rec.material_ptr->scattering_pdf(r, hit_rec, scattered)))
 					cout << "scatter_pdf is nan" << endl;
 				if (pdf_value == 0)
-					cout << "pdf value" << endl;
-				return emit + scatter_rec.albedo * hit_rec.material_ptr->scattering_pdf(r, hit_rec, scattered) *
+					cout << "pdf value" << endl;*/
+				return emit + scatter_rec._albedo * hit_rec.material_ptr->scattering_pdf(r, hit_rec, scattered) *
 					color(scattered, object_list, light, depth + 1) / pdf_value;
 			}
 		}
@@ -116,9 +117,9 @@ bool IsLittleEndian() {
 }
 
 //#define scene_random
+#define scene_room
 //#define scene_cup
-//#define scene_room
-#define scene_mis
+//#define scene_mis
 //#define OUTPIUT_PPM
 void output_ppm()
 {
@@ -145,14 +146,33 @@ void output_ppm()
 	Hitable_list light(light_list);
 #endif
 
+#ifdef scene_room
+	int nx = 512, ny = 512, ns = 300;
+	vec3 lookfrom(0.0, 0.0, 4),
+		lookat(0.0, 0.0, 0.0),
+		vup(0.0, 1.0, 0.0);
+	Camera cam(lookfrom, lookat, vup, 50., float(nx) / float(ny));
+	Object obj("./scenes/Scene01/room.obj");
+	Sphere light_sphere(vec3(0.0, 1.589, -1.274), 0.2, new Light(vec3(50, 50, 40)));
+	cout << "sceen tri:" << obj.scene.size() << endl << "sample: " << ns << endl;
+	obj.scene.push_back(&light_sphere);
+	Bvh bvh(obj.scene, 0.0, 1.0);
+
+	// light
+	list<Hitable*> list;
+	list.push_back(&light_sphere);
+	Hitable_list light(list);
+	std::string filename = "./output3/room";
+#endif
+
 #ifdef scene_cup
 	int nx = 512, ny = 512, ns = 100;
 	vec3 lookfrom(0.0, 0.64, 0.52),
 		lookat(0.0, 0.4, 0.3),
 		vup(0.0, 1.0, 0.0);
 	Camera cam(lookfrom, lookat, vup, 60., float(nx) / float(ny));
-	Object obj("./scenes/Scene01/cup.obj");
-	RectXY light_rect(-2.758771896 - 0.5, -2.758771896 + 0.5, 1.5246 - 0.5, 1.5246 + 0.5, 0, new Diffuse_light(vec3(40, 40, 40)));
+	Object obj("./scenes/Scene02/cup.obj");
+	RectXY light_rect(-2.758771896 - 0.5, -2.758771896 + 0.5, 1.5246 - 0.5, 1.5246 + 0.5, 0, new Light(vec3(40, 40, 40)));
 	obj.scene.push_back(&light_rect);
 	cout << obj.scene.size() << endl;
 	Bvh bvh(obj.scene, 0.0, 1.0);
@@ -161,29 +181,7 @@ void output_ppm()
 	list<Hitable*> light_list;
 	light_list.push_back(&light_rect);
 	Hitable_list light(light_list);
-	std::string filename = "./output2/scene01";
-#endif
-
-#ifdef scene_room
-	int nx = 512, ny = 512, ns = 300;
-	vec3 lookfrom(0.0, 0.0, 4),
-		lookat(0.0, 0.0, 0.0),
-		vup(0.0, 1.0, 0.0);
-	Camera cam(lookfrom, lookat, vup, 50., float(nx) / float(ny));
-	Object obj("./scenes/Scene02/room.obj");
-	//obj.scene.push_back(new Sphere(vec3(0.0, 1.589, -1.274), 0.2, new Diffuse_light(vec3(50, 50, 40))));
-	Sphere light_sphere(vec3(0.0, 1.589, -1.274), 0.2, new Diffuse_light(vec3(50, 50, 40)));
-	//RectXZ light_rect(-0.2, 0.2, -0.2, 0.2, 1.589, new Diffuse_light(vec3(50, 50, 40)));
-	cout << obj.scene.size() << endl;
-	obj.scene.push_back(&light_sphere);
-	Bvh bvh(obj.scene, 0.0, 1.0);
-
-	// light
-	list<Hitable*> list;
-	//list.push_back(&light_rect);
-	list.push_back(&light_sphere);
-	Hitable_list light(list);
-	std::string filename = "./output2/scene02";
+	std::string filename = "./output3/cup";
 #endif
 
 #ifdef scene_mis
@@ -193,11 +191,11 @@ void output_ppm()
 		vup(0.0, 0.952421, -0.304787);
 	Camera cam(lookfrom, lookat, vup, 28, float(nx) / float(ny));
 	Object obj("./scenes/Scene03/VeachMIS.obj");
-	Sphere light_sphere1(vec3(-10, 10, 4), 0.5, new Diffuse_light(vec3(800))),
-		light_sphere2(vec3(3.75, 0, 0), 0.033, new Diffuse_light(vec3(901.803))),
-		light_sphere3(vec3(1.25, 0, 0), 0.1, new Diffuse_light(vec3(100))),
-		light_sphere4(vec3(-1.25, 0, 0), 0.3, new Diffuse_light(vec3(11.1111))),
-		light_sphere5(vec3(-3.75, 0, 0), 0.9, new Diffuse_light(vec3(1.23457)));
+	Sphere light_sphere1(vec3(-10, 10, 4), 0.5, new Light(vec3(800))),
+		light_sphere2(vec3(3.75, 0, 0), 0.033, new Light(vec3(901.803))),
+		light_sphere3(vec3(1.25, 0, 0), 0.1, new Light(vec3(100))),
+		light_sphere4(vec3(-1.25, 0, 0), 0.3, new Light(vec3(11.1111))),
+		light_sphere5(vec3(-3.75, 0, 0), 0.9, new Light(vec3(1.23457)));
 	cout << obj.scene.size() << endl;
 	obj.scene.push_back(&light_sphere1);
 	obj.scene.push_back(&light_sphere2);
@@ -214,7 +212,7 @@ void output_ppm()
 	list.push_back(&light_sphere4);
 	list.push_back(&light_sphere5);
 	Hitable_list light(list);
-	std::string filename = "./output2/scene03";
+	std::string filename = "./output3/VeachMIS";
 #endif
 
 #ifdef OUTPIUT_PPM

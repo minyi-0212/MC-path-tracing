@@ -7,16 +7,6 @@
 #include "Hitable.h"
 #include "Material.h"
 
-struct mtl_param
-{
-	std::string name;
-	float Ns, // shiness
-		Ni; // refractive index
-	int illum;
-	glm::vec3 Ka, Kd, Ks, Tf; // ambient diffuse specular transmission filter
-
-};
-
 class Object
 {
 public:
@@ -37,5 +27,5 @@ private:
 
 	std::vector<glm::vec3> _vertices;//顶点
 	std::vector<glm::vec3> _normals;//法向量
-	std::map<std::string, mtl_param*> _mtl_map;
+	std::map<std::string, MTL*> _mtl_map;
 };

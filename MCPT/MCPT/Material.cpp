@@ -12,12 +12,8 @@ vec3 random_in_unit_sphere()
 bool Lambertian::scatter(const Ray& r_in, const hit_record& rec,
 	scatter_record& scatter_rec)
 {
-	vec3 s = rec.p + rec.normal + random_in_unit_sphere();
-	//scattered = Ray(rec.p, normalize(s-rec.p));
-	//attenuation = albedo;
-	//pdf = dot(rec.normal, scattered.direction()) / M_PI; // cosθ
 	scatter_rec.is_specular = false;
-	scatter_rec.albedo = albedo;
+	scatter_rec._albedo = _albedo;
 	scatter_rec.pdf_ptr = std::make_shared<PDF_cos>(rec.normal);
 	return true;
 }
@@ -31,6 +27,7 @@ float Lambertian::scattering_pdf(const Ray& r_in, const hit_record& rec,
 	return cosine / M_PI;
 }
 
+
 vec3 reflect(const vec3& v, const vec3& n)
 {
 	return v - 2 * dot(v, n)*n;
@@ -40,11 +37,12 @@ bool Metal::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& 
 {
 	vec3 ref = reflect(normalize(r_in.direction()), hit_rec.normal);
 	scatter_rec.is_specular = true;
-	scatter_rec.albedo = albedo;
-	scatter_rec.specular_ray = Ray(hit_rec.p, ref + fuzzier * random_in_unit_sphere());
+	scatter_rec._albedo = _albedo;
+	scatter_rec.specular_ray = Ray(hit_rec.p, ref + _fuzzier * random_in_unit_sphere());
 	scatter_rec.pdf_ptr = nullptr;
 	return true;
 }
+
 
 bool refract(const vec3& v, const vec3& n, float ni_over_nt, vec3& refracted)
 {
@@ -61,16 +59,16 @@ bool refract(const vec3& v, const vec3& n, float ni_over_nt, vec3& refracted)
 }
 
 //发生折射的概率，schlick：近似地计算出不同入射角旳菲涅耳反射比
-float schlick(float cosine, float Ni)
+float schlick(float cosine, float _Ni)
 {
-	float r0 = (1 - Ni) / (1 + Ni);
+	float r0 = (1 - _Ni) / (1 + _Ni);
 	r0 = r0 * r0;
 	return r0 + (1 - r0)*pow((1 - cosine), 5);
 }
 
-bool Dielectric::scatter(const Ray& r_in, const hit_record& rec, vec3& attenuation, Ray& scattered) const {
+bool Dielectric::scatter(const Ray& r_in, const hit_record& hit_rec, vec3& attenuation, Ray& scattered) const {
 	// reflection
-	vec3 reflected = reflect(r_in.direction(), rec.normal);
+	vec3 reflected = reflect(r_in.direction(), hit_rec.normal);
 
 	// refraction
 	vec3 outward_normal;
@@ -79,28 +77,121 @@ bool Dielectric::scatter(const Ray& r_in, const hit_record& rec, vec3& attenuati
 	vec3 refracted;
 	float reflect_prob;
 	float cosine;
-	if (dot(r_in.direction(), rec.normal) > 0) {
-		outward_normal = -rec.normal;
-		ni_over_nt = Ni;
+	if (dot(r_in.direction(), hit_rec.normal) > 0) {
+		outward_normal = -hit_rec.normal;
+		ni_over_nt = _Ni;
 		//cosine = Ni * dot(r_in.direction(), rec.normal) / r_in.direction().length();
-		cosine = dot(r_in.direction(), rec.normal) / r_in.direction().length();
-		cosine = sqrt(1 - Ni * Ni*(1 - cosine * cosine));
+		cosine = dot(r_in.direction(), hit_rec.normal) / r_in.direction().length();
+		cosine = sqrt(1 - _Ni * _Ni*(1 - cosine * cosine));
 	}
 	else {
-		outward_normal = rec.normal;
-		ni_over_nt = 1.0f / Ni;
-		cosine = -dot(r_in.direction(), rec.normal) / r_in.direction().length();
+		outward_normal = hit_rec.normal;
+		ni_over_nt = 1.0f / _Ni;
+		cosine = -dot(r_in.direction(), hit_rec.normal) / r_in.direction().length();
 	}
 
 	if (refract(r_in.direction(), outward_normal, ni_over_nt, refracted))
-		reflect_prob = schlick(cosine, Ni);
+		reflect_prob = schlick(cosine, _Ni);
 	else
 		reflect_prob = 1.0;
 
 	// choose
 	if (random_float_0_1() < reflect_prob)
-		scattered = Ray(rec.p, reflected);
+		scattered = Ray(hit_rec.p, reflected);
 	else
-		scattered = Ray(rec.p, refracted);
+		scattered = Ray(hit_rec.p, refracted);
 	return true;
+}
+
+
+vec3 Light::emitted(const Ray& r_in, const hit_record& rec) const
+{
+	/*if (dot(r_in.direction(), rec.normal) > 0)
+		return Le;
+	else
+		return vec3(0);*/
+	return _Le;
+};
+
+
+bool MTL::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& scatter_rec)
+{
+	float has_diffuse = dot(para.Kd, vec3(1.0)),
+		has_specular = dot(para.Ks, vec3(1.0));
+	if (has_diffuse + has_specular <= 0)
+		return false;
+
+	// refraction
+	if (para.illum &&para.Ni != 1.0) 
+	{
+		// reflection
+		vec3 reflected = reflect(r_in.direction(), hit_rec.normal);
+
+		// refraction
+		vec3 outward_normal;
+		float ni_over_nt;
+		vec3 refracted;
+		float reflect_prob, cosine;
+		if (dot(r_in.direction(), hit_rec.normal) > 0) {
+			outward_normal = -hit_rec.normal;
+			ni_over_nt = para.Ni;
+			cosine = dot(r_in.direction(), hit_rec.normal) / r_in.direction().length();
+			cosine = sqrt(1 - para.Ni * para.Ni*(1 - cosine * cosine));
+		}
+		else {
+			outward_normal = hit_rec.normal;
+			ni_over_nt = 1.0f / para.Ni;
+			cosine = -dot(r_in.direction(), hit_rec.normal) / r_in.direction().length();
+		}
+
+		if (refract(r_in.direction(), outward_normal, ni_over_nt, refracted))
+			reflect_prob = schlick(cosine, para.Ni);
+		else
+			reflect_prob = 1.0;
+
+		// choose
+		if (random_float_0_1() < reflect_prob)
+		{
+			scatter_rec.is_specular = true;
+			scatter_rec._albedo = para.Ks;
+			scatter_rec.specular_ray = Ray(hit_rec.p, reflected);
+			scatter_rec.pdf_ptr = std::make_shared<PDF_cos>(reflected);
+		}
+		else
+		{
+			scatter_rec.is_specular = true;
+			scatter_rec._albedo = vec3(1.0);
+			scatter_rec.specular_ray = Ray(hit_rec.p, refracted);
+			scatter_rec.pdf_ptr = std::make_shared<PDF_cos>(refracted);
+		}
+		return true;
+	}
+
+	// reflection
+	if (has_specular && random_float_0_1() > has_diffuse / has_specular)
+	{
+		vec3 reflected = reflect(normalize(r_in.direction()), hit_rec.normal);
+		scatter_rec.is_specular = true;
+		scatter_rec._albedo = para.Ks;
+		scatter_rec.specular_ray = Ray(hit_rec.p, reflected);
+		scatter_rec.pdf_ptr = std::make_shared<PDF_cos>(reflected);
+		return true;
+	}
+	// lambertian
+	else
+	{
+		//cout << "diffuse :" << para.Kd << endl;
+		scatter_rec.is_specular = false;
+		scatter_rec._albedo = para.Kd;
+		scatter_rec.pdf_ptr = std::make_shared<PDF_cos>(hit_rec.normal);
+		return true;
+	}
+}
+
+float MTL::scattering_pdf(const Ray& r_in, const hit_record& rec, const Ray& scattered)
+{
+	float cosine = dot(rec.normal, normalize(scattered.direction()));
+	if (cosine < 0)
+		cosine = 0;
+	return cosine / M_PI;
 }

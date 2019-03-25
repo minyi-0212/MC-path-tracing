@@ -24,9 +24,9 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 			{
 				/*if (isnan(scatter_rec.specular_ray.direction()[0]))
 					cout << "specular_ray direction is nan" << endl;*/
-				/*return emit + scatter_rec._albedo *
-					color(Ray(hit_rec.p, scatter_rec.pdf_ptr->importance_sampling()), 
-						object_list, light, depth + 1);*/
+					/*return emit + scatter_rec._albedo *
+						color(Ray(hit_rec.p, scatter_rec.pdf_ptr->importance_sampling()),
+							object_list, light, depth + 1);*/
 				return scatter_rec._albedo * color(scatter_rec.specular_ray, object_list, light, depth + 1);
 			}
 			else
@@ -144,10 +144,11 @@ void output_ppm()
 	light_list.push_back(&light_sphere);
 	light_list.push_back(&light_rect);
 	Hitable_list light(light_list);
+	std::string filename = "./output3/random";
 #endif
 
 #ifdef scene_room
-	int nx = 512, ny = 512, ns = 300;
+	int nx = 512, ny = 512, ns = 1000;
 	vec3 lookfrom(0.0, 0.0, 4),
 		lookat(0.0, 0.0, 0.0),
 		vup(0.0, 1.0, 0.0);
@@ -215,60 +216,56 @@ void output_ppm()
 	std::string filename = "./output3/VeachMIS";
 #endif
 
-#ifdef OUTPIUT_PPM
-	std::ofstream fout(filename+".ppm");
-	fout << "P3" << endl << nx << " " << ny << endl << 255 << endl; //P is capital
-#endif
-#ifndef OUTPIUT_PPM
-	std::ofstream fout(filename + ".pfm", std::ios::out | std::ios::binary);
-	//cout << (IsLittleEndian() ? -1 : 1) << endl;
-	fout << "PF" << endl << nx << " " << ny << endl << (IsLittleEndian() ? -1 : 1) << endl;
-#endif
+	vector<vec3> rgb(nx*ny, vec3(0.));
 	Performance p;
 	p.start();
-	float max_color = 0;
-	for (int j = ny - 1; j >= 0; j--)
+	for (int s = 0; s < ns; s++)
 	{
-		if (j % 100 == 0)
+		for (int j = 0; j < ny; j++)
 		{
-			cout << "line : " << j << "/" << ny << ", compute time " << p.end() << "s." << endl;
-			p.start();
-		}
-		for (int i = 0; i < nx; i++)
-		{
-			vec3 rgb(0.0);
-			for (int s = 0; s < ns; s++)
+			for (int i = 0; i < nx; i++)
 			{
+				int index = nx - 1 - i + (ny - 1 - j) * nx;
 				float u = (float(i) + random_float_0_1()) / float(nx),
 					v = (float(j) + random_float_0_1()) / float(ny);
-				rgb += color(cam.get_ray(u, v), bvh, light, 0);
-				/*if (i == 207 && j == 511 && s ==1)
-					cout << "debug here" << i << " " << j <<" " << s<< endl;
-				vec3 tmp(color(cam.get_ray(u, v), bvh, light, 0));
-				if (isnan(tmp[0]))
-					cout << "nan" << i << " " << j <<" " <<s<< endl;*/
+				rgb[index] = vec3(s) * rgb[index] + color(cam.get_ray(u, v), bvh, light, 0);
+				rgb[index] /= (s + 1);
 			}
-			rgb /= ns;
-			//rgb = sqrt(rgb);
+		}
+		if (s % 10 == 0)
+		{
+			cout << "sample " << s << ", compute time " << p.end() << "s." << endl;
+			p.start();
 #ifdef OUTPIUT_PPM
-			if (rgb[0] > max_color)
-				max_color = rgb[0];
-			if (rgb[1] > max_color)
-				max_color = rgb[1];
-			if (rgb[2] > max_color)
-				max_color = rgb[2];
-
-			fout << int(255.99*rgb[0]) << " " << int(255.99*rgb[1]) << " " << int(255.99*rgb[2]) << endl;
+			float max_color = 0;
+			std::ofstream fout(filename + std::to_string(s) + ".ppm");
+			fout << "P3" << endl << nx << " " << ny << endl << 255 << endl; //P is capital
+			for (auto c : rgb)
+			{
+				if (c[0] > max_color)
+					max_color = c[0];
+				if (c[1] > max_color)
+					max_color = c[1];
+				if (c[2] > max_color)
+					max_color = c[2];
+				fout << int(255.99*c[0]) << " " << int(255.99*c[1]) << " " << int(255.99*c[2]) << endl;
+			}
+			fout.close();
+			cout << "max_color : " << int(255.99*max_color) << endl;
 #endif
 #ifndef OUTPIUT_PPM
-			fout.write(reinterpret_cast<char *>(&rgb[0]), sizeof(float));
-			fout.write(reinterpret_cast<char *>(&rgb[1]), sizeof(float));
-			fout.write(reinterpret_cast<char *>(&rgb[2]), sizeof(float));
+			std::ofstream fout(filename + std::to_string(s) + ".pfm", std::ios::out | std::ios::binary);
+			fout << "PF" << endl << nx << " " << ny << endl << (IsLittleEndian() ? -1 : 1) << endl;
+			for (auto c : rgb)
+			{
+				fout.write(reinterpret_cast<char *>(&c[0]), sizeof(float));
+				fout.write(reinterpret_cast<char *>(&c[1]), sizeof(float));
+				fout.write(reinterpret_cast<char *>(&c[2]), sizeof(float));
+			}
+			fout.close();
 #endif
 		}
 	}
-	fout.close();
-	cout << "max_color : " << int(255.99*max_color) << endl;
 }
 
 int main(int argc, char *argv[])

@@ -50,3 +50,13 @@ MCPT/MCPT/MCPT\.vcxproj
 MCPT/MCPT/MCPT\.vcxproj\.filters
 
 MCPT/MCPT/MCPT\.vcxproj\.user
+
+*.mtl
+
+*.mb
+
+*.obj
+
+*.pdf
+
+*.pfm

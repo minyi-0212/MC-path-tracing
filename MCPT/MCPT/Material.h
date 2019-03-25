@@ -10,7 +10,7 @@ struct scatter_record
 {
 	bool is_specular;
 	Ray specular_ray; // direction
-	vec3 _albedo; // attenuation
+	vec3 albedo; // attenuation
 	std::shared_ptr<PDF> pdf_ptr;
 };
 

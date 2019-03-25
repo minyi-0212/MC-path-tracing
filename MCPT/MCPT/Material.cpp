@@ -13,7 +13,7 @@ bool Lambertian::scatter(const Ray& r_in, const hit_record& rec,
 	scatter_record& scatter_rec)
 {
 	scatter_rec.is_specular = false;
-	scatter_rec._albedo = _albedo;
+	scatter_rec.albedo = _albedo;
 	scatter_rec.pdf_ptr = std::make_shared<PDF_cos>(rec.normal);
 	return true;
 }
@@ -37,7 +37,7 @@ bool Metal::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& 
 {
 	vec3 ref = reflect(normalize(r_in.direction()), hit_rec.normal);
 	scatter_rec.is_specular = true;
-	scatter_rec._albedo = _albedo;
+	scatter_rec.albedo = _albedo;
 	scatter_rec.specular_ray = Ray(hit_rec.p, ref + _fuzzier * random_in_unit_sphere());
 	scatter_rec.pdf_ptr = nullptr;
 	return true;
@@ -103,7 +103,6 @@ bool Dielectric::scatter(const Ray& r_in, const hit_record& hit_rec, vec3& atten
 	return true;
 }
 
-
 vec3 Light::emitted(const Ray& r_in, const hit_record& rec) const
 {
 	/*if (dot(r_in.direction(), rec.normal) > 0)
@@ -153,14 +152,14 @@ bool MTL::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& sc
 		if (random_float_0_1() < reflect_prob)
 		{
 			scatter_rec.is_specular = true;
-			scatter_rec._albedo = para.Ks;
+			scatter_rec.albedo = para.Ks;
 			scatter_rec.specular_ray = Ray(hit_rec.p, reflected);
 			scatter_rec.pdf_ptr = std::make_shared<PDF_cos>(reflected);
 		}
 		else
 		{
 			scatter_rec.is_specular = true;
-			scatter_rec._albedo = vec3(1.0);
+			scatter_rec.albedo = vec3(1.0);
 			scatter_rec.specular_ray = Ray(hit_rec.p, refracted);
 			scatter_rec.pdf_ptr = std::make_shared<PDF_cos>(refracted);
 		}
@@ -172,7 +171,7 @@ bool MTL::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& sc
 	{
 		vec3 reflected = reflect(normalize(r_in.direction()), hit_rec.normal);
 		scatter_rec.is_specular = true;
-		scatter_rec._albedo = para.Ks;
+		scatter_rec.albedo = para.Ks;
 		scatter_rec.specular_ray = Ray(hit_rec.p, reflected);
 		scatter_rec.pdf_ptr = std::make_shared<PDF_cos>(reflected);
 		return true;
@@ -182,7 +181,7 @@ bool MTL::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& sc
 	{
 		//cout << "diffuse :" << para.Kd << endl;
 		scatter_rec.is_specular = false;
-		scatter_rec._albedo = para.Kd;
+		scatter_rec.albedo = para.Kd;
 		scatter_rec.pdf_ptr = std::make_shared<PDF_cos>(hit_rec.normal);
 		return true;
 	}

@@ -274,7 +274,7 @@ float RectXY::pdf_value(const vec3& origin, const vec3& v) const
 
 vec3 RectXY::random(const vec3& origin) const
 {
-	vec3 random_point = vec3(x0 + random_float_0_1()*(x1 - x0), k, y0 + random_float_0_1()*(y1 - y0));
+	vec3 random_point = vec3(x0 + random_float_0_1()*(x1 - x0), y0 + random_float_0_1()*(y1 - y0), k);
 	return random_point - origin;
 }
 
@@ -342,7 +342,7 @@ float RectYZ::pdf_value(const vec3& origin, const vec3& v) const
 
 vec3 RectYZ::random(const vec3& origin) const
 {
-	vec3 random_point = vec3(y0 + random_float_0_1()*(y1 - y0), k, z0 + random_float_0_1()*(z1 - z0));
+	vec3 random_point = vec3(k, y0 + random_float_0_1()*(y1 - y0), z0 + random_float_0_1()*(z1 - z0));
 	return random_point - origin;
 }
 
@@ -351,7 +351,7 @@ bool Triangle::hit(const Ray& r, float t_min, float t_max, hit_record& rec) cons
 {
 	vec3 q = cross(r.direction(), e2);
 	float alpha = dot(e1, q);
-	if (abs(alpha) < 0.0001)
+	if (abs(alpha) == 0)
 		return false;
 	float factor = 1.0 / alpha;
 	vec3 s = r.origin() - v0;

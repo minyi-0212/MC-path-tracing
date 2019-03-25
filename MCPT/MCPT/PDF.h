@@ -17,7 +17,7 @@ public:
 		if (isnan(_frame[0][0]))
 		{
 			vec3 tmp(n), tmp2(_frame[0]);
-			cout << tmp << " " << tmp2 << endl;
+			cout <<"in PDF_cos construct : input-"<< tmp << ", output-" << tmp2 << endl;
 		}
 	}
 	virtual float value(const vec3& direction) const;

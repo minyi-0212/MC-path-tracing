@@ -27,7 +27,7 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 					/*return emit + scatter_rec._albedo *
 						color(Ray(hit_rec.p, scatter_rec.pdf_ptr->importance_sampling()),
 							object_list, light, depth + 1);*/
-				return scatter_rec._albedo * color(scatter_rec.specular_ray, object_list, light, depth + 1);
+				return scatter_rec.albedo * color(scatter_rec.specular_ray, object_list, light, depth + 1);
 			}
 			else
 			{
@@ -57,7 +57,7 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 					cout << "scatter_pdf is nan" << endl;
 				if (pdf_value == 0)
 					cout << "pdf value" << endl;*/
-				return emit + scatter_rec._albedo * hit_rec.material_ptr->scattering_pdf(r, hit_rec, scattered) *
+				return emit + scatter_rec.albedo * hit_rec.material_ptr->scattering_pdf(r, hit_rec, scattered) *
 					color(scattered, object_list, light, depth + 1) / pdf_value;
 			}
 		}
@@ -117,8 +117,8 @@ bool IsLittleEndian() {
 }
 
 //#define scene_random
-#define scene_room
-//#define scene_cup
+//#define scene_room
+#define scene_cup
 //#define scene_mis
 //#define OUTPIUT_PPM
 void output_ppm()
@@ -163,16 +163,17 @@ void output_ppm()
 	list<Hitable*> list;
 	list.push_back(&light_sphere);
 	Hitable_list light(list);
-	std::string filename = "./output3/room";
+	std::string filename = "./room/room";
 #endif
 
 #ifdef scene_cup
-	int nx = 512, ny = 512, ns = 100;
+	int nx = 512, ny = 512, ns = 1000;
 	vec3 lookfrom(0.0, 0.64, 0.52),
 		lookat(0.0, 0.4, 0.3),
 		vup(0.0, 1.0, 0.0);
 	Camera cam(lookfrom, lookat, vup, 60., float(nx) / float(ny));
 	Object obj("./scenes/Scene02/cup.obj");
+	//-2.758771896,1.5246,0
 	RectXY light_rect(-2.758771896 - 0.5, -2.758771896 + 0.5, 1.5246 - 0.5, 1.5246 + 0.5, 0, new Light(vec3(40, 40, 40)));
 	obj.scene.push_back(&light_rect);
 	cout << obj.scene.size() << endl;
@@ -182,11 +183,11 @@ void output_ppm()
 	list<Hitable*> light_list;
 	light_list.push_back(&light_rect);
 	Hitable_list light(light_list);
-	std::string filename = "./output3/cup";
+	std::string filename = "./cup/cup";
 #endif
 
 #ifdef scene_mis
-	int nx = 1152, ny = 864, ns = 10;
+	int nx = 1152, ny = 864, ns = 1000;
 	vec3 lookfrom(0.0, 2.0, 15),
 		lookat(0.0, 1.69521, 14.0476),
 		vup(0.0, 0.952421, -0.304787);
@@ -213,9 +214,10 @@ void output_ppm()
 	list.push_back(&light_sphere4);
 	list.push_back(&light_sphere5);
 	Hitable_list light(list);
-	std::string filename = "./output3/VeachMIS";
+	std::string filename = "./VeachMIS/VeachMIS";
 #endif
 
+	cout << "output: " << filename << endl;
 	vector<vec3> rgb(nx*ny, vec3(0.));
 	Performance p;
 	p.start();

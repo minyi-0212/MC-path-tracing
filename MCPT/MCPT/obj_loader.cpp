@@ -151,7 +151,7 @@ void Object::read_obj(string obj_file)
 			//f 7/13/13 5/14/14 3/3/15 1/1/16
 			while (is >> type) // 7/13/13
 			{
-				/*if (mtlname != "grey")
+				/*if (mtlname != "mirror")
 					break;*/
 				//cout << type << endl;
 				strcpy_s(t, type.c_str());
@@ -173,7 +173,7 @@ void Object::read_obj(string obj_file)
 				if (index >= 3)
 				{
 					/*scene.push_back(new Triangle(_vertices[vertex_idx[0] - 1], _vertices[vertex_idx[1] - 1],
-						_vertices[vertex_idx[2] - 1], new Lambertian(material->para.Kd)));*/
+						_vertices[vertex_idx[2] - 1], new Lambertian(vec3(1,0,0))));*/
 					scene.push_back(new Triangle(_vertices[vertex_idx[0] - 1], _vertices[vertex_idx[1] - 1],
 						_vertices[vertex_idx[2] - 1], material));
 

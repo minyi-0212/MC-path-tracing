@@ -23,7 +23,7 @@ public:
 	virtual float pdf_value(const vec3& origin, const vec3& v)  const { return 0; }
 	virtual vec3 random(const vec3& origin) const
 	{
-		//std::cout << "virtual" << std::endl;
+		std::cout << "in virtual construct Hitable::random" << std::endl;
 		return vec3(0);
 	}
 };

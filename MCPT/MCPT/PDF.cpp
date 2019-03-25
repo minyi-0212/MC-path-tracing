@@ -39,8 +39,8 @@ float PDF_to_light::value(const vec3& direction) const
 vec3 PDF_to_light::importance_sampling() const
 {
 	vec3 tmp = obj->random(origin);
-	if (isnan(tmp[0]) || length(tmp) == 0)
-		std::cout << "pdf_light: " << tmp[0] << " " << tmp[1] << " " << tmp[2] << std::endl;
+	if (isnan(tmp[0]))
+		std::cout << "PDF_to_light: " << tmp[0] << " " << tmp[1] << " " << tmp[2] << std::endl;
 
 	return tmp;
 }

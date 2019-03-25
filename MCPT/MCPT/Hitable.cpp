@@ -67,11 +67,11 @@ float Sphere::pdf_value(const vec3& origin, const vec3& v)  const
 inline vec3 random_to_sphere(float radius, float distance_square)
 {
 	float cos_theta = radius / distance_square;
-	if (cos_theta > 1)
-		return vec3(0);
+	if (cos_theta > 1) 
+		cos_theta = 1;
 	float r1 = random_float_0_1(),
 		r2 = random_float_0_1(),
-		z = 1 + r2 * (sqrt(1 - radius * radius / distance_square) - 1),
+		z = 1 + r2 * (sqrt(1 - cos_theta * cos_theta) - 1),
 		phi = 2 * M_PI * r1;
 	return vec3(cos(phi)*sqrt(1 - z * z), sin(phi)*sqrt(1 - z * z), z);
 }
@@ -79,12 +79,12 @@ inline vec3 random_to_sphere(float radius, float distance_square)
 vec3 Sphere::random(const vec3& origin) const
 {
 	vec3 direction = center - origin;
-	float distance_square = length(direction)*length(direction);
+	float distance = length(direction);
 	OrthonormalBases frame;
 	frame.build_frame(direction);
-	vec3 tmp(random_to_sphere(radius, distance_square));
+	vec3 tmp(random_to_sphere(radius, distance));
 	if (isnan(tmp[0]))
-		cout << "sphere: nan - " << tmp << " " << radius << " " << distance_square << endl;
+		cout << "sphere: nan - " << tmp << " " << radius << " " << distance << endl;
 	return frame.local(tmp);
 }
 

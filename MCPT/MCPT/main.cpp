@@ -38,10 +38,10 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 				{
 					scattered = Ray(hit_rec.p, pdf.importance_sampling());
 					pdf_value = pdf.value(scattered.direction());
-					/*if (isnan(scattered.direction()[0]))
+					if (isnan(scattered.direction()[0]))
 						cout << "s nan" << endl;
 					if (isnan(pdf_value))
-						cout << "pdf nan" << endl;*/
+						cout << "pdf nan" << endl;
 				} while (pdf_value == 0);
 				/*if (pdf_value == 0)
 				{
@@ -117,8 +117,8 @@ bool IsLittleEndian() {
 }
 
 //#define scene_random
-//#define scene_room
-#define scene_cup
+#define scene_room
+//#define scene_cup
 //#define scene_mis
 //#define OUTPIUT_PPM
 void output_ppm()
@@ -148,7 +148,7 @@ void output_ppm()
 #endif
 
 #ifdef scene_room
-	int nx = 512, ny = 512, ns = 1000;
+	int nx = 512, ny = 512, ns = 10;
 	vec3 lookfrom(0.0, 0.0, 4),
 		lookat(0.0, 0.0, 0.0),
 		vup(0.0, 1.0, 0.0);
@@ -221,8 +221,9 @@ void output_ppm()
 	vector<vec3> rgb(nx*ny, vec3(0.));
 	Performance p;
 	p.start();
-	for (int s = 0; s < ns; s++)
+	for (int s = 0; s <= ns; s++)
 	{
+//#pragma omp parallel for
 		for (int j = 0; j < ny; j++)
 		{
 			for (int i = 0; i < nx; i++)

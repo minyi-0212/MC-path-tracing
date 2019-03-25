@@ -15,6 +15,11 @@ bool Lambertian::scatter(const Ray& r_in, const hit_record& rec,
 	scatter_rec.is_specular = false;
 	scatter_rec.albedo = _albedo;
 	scatter_rec.pdf_ptr = std::make_shared<PDF_cos>(rec.normal);
+	if (length(rec.normal) == 0)
+	{
+		vec3 tmp(rec.normal);
+		cout << "Lambertian normal length is 0: " << tmp << endl;
+	}
 	return true;
 }
 
@@ -52,6 +57,10 @@ bool refract(const vec3& v, const vec3& n, float ni_over_nt, vec3& refracted)
 	float discriminant = 1.0f - ni_over_nt * ni_over_nt*(1 - cos1 * cos1);
 	if (discriminant > 0) {
 		refracted = ni_over_nt * (L + n * cos1) - n * sqrt(discriminant);
+		if (length(refracted) == 0)
+		{
+			cout << "debug:refract direction is (0,0,0)" << endl;
+		}
 		return true;
 	}
 	else
@@ -144,7 +153,13 @@ bool MTL::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& sc
 		}
 
 		if (refract(r_in.direction(), outward_normal, ni_over_nt, refracted))
+		{
+			/*if (length(refracted) == 0)
+			{
+				cout << "debug:refract direction is (0,0,0)" << endl;
+			}*/
 			reflect_prob = schlick(cosine, para.Ni);
+		}
 		else
 			reflect_prob = 1.0;
 
@@ -155,6 +170,10 @@ bool MTL::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& sc
 			scatter_rec.albedo = para.Ks;
 			scatter_rec.specular_ray = Ray(hit_rec.p, reflected);
 			scatter_rec.pdf_ptr = std::make_shared<PDF_cos>(reflected);
+			if (length(reflected) == 0)
+			{
+				cout << "MTL Ni:reflected length is 0: " << reflected << endl;
+			}
 		}
 		else
 		{
@@ -162,6 +181,10 @@ bool MTL::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& sc
 			scatter_rec.albedo = vec3(1.0);
 			scatter_rec.specular_ray = Ray(hit_rec.p, refracted);
 			scatter_rec.pdf_ptr = std::make_shared<PDF_cos>(refracted);
+			if (length(refracted) == 0)
+			{
+				cout << "MTL Ni:refracted length is 0: " << refracted << endl;
+			}
 		}
 		return true;
 	}
@@ -174,6 +197,10 @@ bool MTL::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& sc
 		scatter_rec.albedo = para.Ks;
 		scatter_rec.specular_ray = Ray(hit_rec.p, reflected);
 		scatter_rec.pdf_ptr = std::make_shared<PDF_cos>(reflected);
+		if (length(reflected) == 0)
+		{
+			cout << "MTL reflected length is 0: " << reflected << endl;
+		}
 		return true;
 	}
 	// lambertian
@@ -183,6 +210,11 @@ bool MTL::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& sc
 		scatter_rec.is_specular = false;
 		scatter_rec.albedo = para.Kd;
 		scatter_rec.pdf_ptr = std::make_shared<PDF_cos>(hit_rec.normal);
+		if (length(hit_rec.normal) == 0)
+		{
+			vec3 tmp(hit_rec.normal);
+			cout << "MTL diffuse normal length is 0: " << tmp << endl;
+		}
 		return true;
 	}
 }

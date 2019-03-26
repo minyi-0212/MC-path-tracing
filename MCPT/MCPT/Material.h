@@ -5,6 +5,7 @@
 #include <memory.h>
 
 using std::vector;
+vec3 random_in_unit_sphere();
 
 struct scatter_record
 {

@@ -26,7 +26,8 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 			}
 			else if (scatter_rec.status == 1)
 			{
-				Ray reflected(hit_rec.p, scatter_rec.pdf_ptr->importance_sampling());
+				//Ray reflected(hit_rec.p, scatter_rec.pdf_ptr->importance_sampling());
+				Ray reflected(hit_rec.p, random_in_unit_sphere());
 				return scatter_rec.albedo * hit_rec.material_ptr->scattering_pdf_value_for_blinn_phone(r, hit_rec, reflected) *
 					color(reflected, object_list, light, depth + 1);
 				//return scatter_rec.albedo * color(scatter_rec.specular_ray, object_list, light, depth + 1);
@@ -158,7 +159,7 @@ void output_ppm()
 #endif
 
 #ifdef scene_room
-	int nx = 512, ny = 512, ns = 1000, output_ns = 100;
+	int nx = 512, ny = 512, ns = 1000, output_ns = 10;
 	vec3 lookfrom(0.0, 0.0, 4),
 		lookat(0.0, 0.0, 0.0),
 		vup(0.0, 1.0, 0.0);

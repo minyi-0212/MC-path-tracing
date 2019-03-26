@@ -11,7 +11,7 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 {
 	// the color for hit
 	hit_record hit_rec;
-	if (object_list.hit(r, 0.001, INT_MAX, hit_rec))
+	if (object_list.hit(r, RAY_MIN_T, INT_MAX, hit_rec))
 	{
 		float pdf_value;
 		scatter_record scatter_rec;
@@ -183,7 +183,7 @@ void output_ppm()
 	Object obj("./scenes/Scene02/cup.obj");
 	//-2.758771896,1.5246,0
 	//RectXY light_rect(-0.1, 0.1, 0.1, 0.2, 0.1, new Light(vec3(40, 40, 40)));
-	RectYZ light_rect(1.5246 - 0.5, 1.5246 + 0.5, 0 - 0.5, 0 + 0.5, -2.758771896, new Light(vec3(40, 40, 40)));
+	RectYZ light_rect(1.5246 - 0.5, 1.5246 + 0.5, 0 - 0.5, 0 + 0.5, -2.7587, new Light(vec3(40, 40, 40)));
 	//Sphere light_rect(vec3(-2.758771896, 1.5246, 0), 0.2, new Light(vec3(40, 40, 40)));
 	cout << "scene tri size: " << obj.scene.size() << endl;
 	obj.scene.push_back(&light_rect);
@@ -193,7 +193,7 @@ void output_ppm()
 	list<Hitable*> light_list;
 	light_list.push_back(&light_rect);
 	Hitable_list light(light_list);
-	std::string filename = "./cup/cup-test";
+	std::string filename = "./cup/cup";
 #endif
 
 #ifdef scene_mis
@@ -233,7 +233,7 @@ void output_ppm()
 	p.start();
 	for (int s = 0; s <= ns; s++)
 	{
-//#pragma omp parallel for
+#pragma omp parallel for
 		for (int j = 0; j < ny; j++)
 		{
 			for (int i = 0; i < nx; i++)

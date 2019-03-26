@@ -49,10 +49,10 @@ bool Sphere::bounding_box(float t0, float t1, AABB& box) const
 float Sphere::pdf_value(const vec3& origin, const vec3& v)  const
 {
 	hit_record hit_rec;
-	if (!this->hit(Ray(origin, v), 0.001, INT_MAX, hit_rec) || (radius / length(center - origin)) > 1)
+	if (!this->hit(Ray(origin, v), RAY_MIN_T, INT_MAX, hit_rec) || (radius / length(center - origin)) > 1)
 		return 0;
 	else
-		//if (this->hit(Ray(origin, v), 0.001, INT_MAX, hit_rec))
+		//if (this->hit(Ray(origin, v), RAY_MIN_T, INT_MAX, hit_rec))
 	{
 		float cos_theta_max = sqrt(1 - radius * radius / (length(center - origin)*length(center - origin))),
 			solid_angle = 2 * M_PI*(1 - cos_theta_max);
@@ -280,7 +280,7 @@ bool RectXY::hit(const Ray& r, float t0, float t1, hit_record& rec) const {
 float RectXY::pdf_value(const vec3& origin, const vec3& v) const
 {
 	hit_record rec;
-	if (this->hit(Ray(origin, v), 0.001, FLT_MAX, rec)) {
+	if (this->hit(Ray(origin, v), RAY_MIN_T, FLT_MAX, rec)) {
 		float area = (x1 - x0)*(y1 - y0);
 		float distance_squared = rec.t * rec.t * length(v)* length(v);
 		float cosine = fabs(dot(v, rec.normal) / length(v));
@@ -314,7 +314,7 @@ bool RectXZ::hit(const Ray& r, float t0, float t1, hit_record& rec) const {
 float RectXZ::pdf_value(const vec3& origin, const vec3& v) const
 {
 	hit_record rec;
-	if (this->hit(Ray(origin, v), 0.001, FLT_MAX, rec)) {
+	if (this->hit(Ray(origin, v), RAY_MIN_T, FLT_MAX, rec)) {
 		float area = (x1 - x0)*(z1 - z0);
 		float distance_squared = rec.t * rec.t * length(v)* length(v);
 		float cosine = fabs(dot(v, rec.normal) / length(v));
@@ -348,7 +348,7 @@ bool RectYZ::hit(const Ray& r, float t0, float t1, hit_record& rec) const {
 float RectYZ::pdf_value(const vec3& origin, const vec3& v) const
 {
 	hit_record rec;
-	if (this->hit(Ray(origin, v), 0.001, FLT_MAX, rec)) {
+	if (this->hit(Ray(origin, v), RAY_MIN_T, FLT_MAX, rec)) {
 		float area = (y1 - y0)*(z1 - z0);
 		float distance_squared = rec.t * rec.t * length(v)* length(v);
 		float cosine = fabs(dot(v, rec.normal) / length(v));

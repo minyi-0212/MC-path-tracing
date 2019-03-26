@@ -62,7 +62,7 @@ private:
 	mutable list<Hitable*> l;
 };
 
-// bvh -- kdtree
+// bvh -- ´ýÐÞ¸ÄÎªkdtree
 class Bvh : public Hitable {
 public:
 	Bvh() {}
@@ -115,7 +115,7 @@ public:
 		y0(_y0), y1(_y1), z0(_z0), z1(_z1), k(_k), material(mat) {};
 	virtual bool hit(const Ray& r, float t0, float t1, hit_record& rec) const;
 	virtual bool bounding_box(float t0, float t1, AABB& box) const {
-		box = AABB(vec3(k - 0.0001, y0, z0), vec3(k + 0.0001, y1, z1));
+		box = AABB(vec3(k, y0, z0), vec3(k, y1, z1));
 		return true;
 	}
 	virtual float pdf_value(const vec3& origin, const vec3& v) const;

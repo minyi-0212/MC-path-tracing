@@ -175,7 +175,7 @@ void output_ppm()
 #endif
 
 #ifdef scene_cup
-	int nx = 512, ny = 512, ns = 1000;
+	int nx = 512, ny = 512, ns = 100, output_ns = 10;
 	vec3 lookfrom(0.0, 0.64, 0.52),
 		lookat(0.0, 0.4, 0.3),
 		vup(0.0, 1.0, 0.0);
@@ -183,7 +183,7 @@ void output_ppm()
 	Object obj("./scenes/Scene02/cup.obj");
 	//-2.758771896,1.5246,0
 	//RectXY light_rect(-0.1, 0.1, 0.1, 0.2, 0.1, new Light(vec3(40, 40, 40)));
-	RectYZ light_rect(1.5246 - 0.5, 1.5246 + 0.5, -0.5, 0.5, -2.758771896, new Light(vec3(40, 40, 40)));
+	RectYZ light_rect(1.5246 - 0.5, 1.5246 + 0.5, 0 - 0.5, 0 + 0.5, -2.758771896, new Light(vec3(40, 40, 40)));
 	//Sphere light_rect(vec3(-2.758771896, 1.5246, 0), 0.2, new Light(vec3(40, 40, 40)));
 	cout << "scene tri size: " << obj.scene.size() << endl;
 	obj.scene.push_back(&light_rect);
@@ -193,7 +193,7 @@ void output_ppm()
 	list<Hitable*> light_list;
 	light_list.push_back(&light_rect);
 	Hitable_list light(light_list);
-	std::string filename = "./cup/cup";
+	std::string filename = "./cup/cup-test";
 #endif
 
 #ifdef scene_mis
@@ -245,7 +245,7 @@ void output_ppm()
 				rgb[index] /= (s + 1);
 			}
 		}
-		if (s % 10 == 0)
+		if (s % output_ns == 0)
 		{
 			cout << "sample " << s << ", compute time " << p.end() << "s." << endl;
 			p.start();

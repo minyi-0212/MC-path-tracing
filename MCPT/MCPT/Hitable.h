@@ -26,6 +26,7 @@ public:
 		std::cout << "in virtual construct Hitable::random" << std::endl;
 		return vec3(0);
 	}
+	virtual bool in_obj(const vec3& p) const { return false; }
 };
 
 // sphere
@@ -38,6 +39,7 @@ public:
 	virtual bool bounding_box(float t0, float t1, AABB& box) const;
 	virtual float pdf_value(const vec3& origin, const vec3& v)  const;
 	virtual vec3 random(const vec3& origin) const;
+	virtual bool in_obj(const vec3& p) const;
 private:
 	vec3 center;
 	float radius;
@@ -54,6 +56,7 @@ public:
 	virtual bool bounding_box(float t0, float t1, AABB& box) const;
 	virtual float pdf_value(const vec3& o, const vec3& v) const;
 	virtual vec3 random(const vec3& o) const;
+	virtual bool in_obj(const vec3& p) const;
 
 private:
 	mutable list<Hitable*> l;

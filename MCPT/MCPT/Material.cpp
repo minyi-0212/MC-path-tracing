@@ -161,13 +161,13 @@ bool MTL::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& sc
 			reflect_prob = schlick(cosine, para.Ni);
 		}
 		else
-			reflect_prob = 1.0;
+			reflect_prob = 1.1;
 
 		// choose
 		if (random_float_0_1() < reflect_prob)
 		{
 			scatter_rec.is_specular = true;
-			scatter_rec.albedo = para.Ks;
+			scatter_rec.albedo = para.Kd;
 			scatter_rec.specular_ray = Ray(hit_rec.p, reflected);
 			scatter_rec.pdf_ptr = std::make_shared<PDF_cos>(reflected);
 			if (length(reflected) == 0)

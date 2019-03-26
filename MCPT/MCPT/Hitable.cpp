@@ -88,6 +88,14 @@ vec3 Sphere::random(const vec3& origin) const
 	return frame.local(tmp);
 }
 
+bool Sphere::in_obj(const vec3& p) const
+{
+	if (fabs(length(center - p)) <= radius)
+		return true;
+	else
+		return false;
+}
+
 
 bool Hitable_list::hit(const Ray& r, float t_min, float t_max, hit_record& rec) const
 {
@@ -143,6 +151,16 @@ vec3 Hitable_list::random(const vec3 & o) const
 	if (index != 0 && index != l.size())
 		advance(iter, index);
 	return (*iter)->random(o);
+}
+
+bool Hitable_list::in_obj(const vec3& p) const
+{
+	for (auto obj : l)
+	{
+		if (obj->in_obj(p))
+			return true;
+	}
+	return false;
 }
 
 

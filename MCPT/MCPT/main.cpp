@@ -36,8 +36,16 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 				Ray scattered;
 				do
 				{
-					scattered = Ray(hit_rec.p, pdf.importance_sampling());
-					pdf_value = pdf.value(scattered.direction());
+					/*if (light.in_obj(hit_rec.p))
+					{
+						scattered = Ray(hit_rec.p, scatter_rec.pdf_ptr->importance_sampling());
+						pdf_value = scatter_rec.pdf_ptr->value(scattered.direction());
+					}
+					else
+					{*/
+						scattered = Ray(hit_rec.p, pdf.importance_sampling());
+						pdf_value = pdf.value(scattered.direction());
+					//}
 					if (isnan(scattered.direction()[0]))
 						cout << "s nan" << endl;
 					if (isnan(pdf_value))
@@ -117,8 +125,8 @@ bool IsLittleEndian() {
 }
 
 //#define scene_random
-#define scene_room
-//#define scene_cup
+//#define scene_room
+#define scene_cup
 //#define scene_mis
 //#define OUTPIUT_PPM
 void output_ppm()
@@ -148,14 +156,14 @@ void output_ppm()
 #endif
 
 #ifdef scene_room
-	int nx = 512, ny = 512, ns = 10;
+	int nx = 512, ny = 512, ns = 1000;
 	vec3 lookfrom(0.0, 0.0, 4),
 		lookat(0.0, 0.0, 0.0),
 		vup(0.0, 1.0, 0.0);
 	Camera cam(lookfrom, lookat, vup, 50., float(nx) / float(ny));
 	Object obj("./scenes/Scene01/room.obj");
 	Sphere light_sphere(vec3(0.0, 1.589, -1.274), 0.2, new Light(vec3(50, 50, 40)));
-	cout << "sceen tri:" << obj.scene.size() << endl << "sample: " << ns << endl;
+	cout << "scene tri size: " << obj.scene.size() << endl << "sample: " << ns << endl;
 	obj.scene.push_back(&light_sphere);
 	Bvh bvh(obj.scene, 0.0, 1.0);
 
@@ -174,9 +182,11 @@ void output_ppm()
 	Camera cam(lookfrom, lookat, vup, 60., float(nx) / float(ny));
 	Object obj("./scenes/Scene02/cup.obj");
 	//-2.758771896,1.5246,0
-	RectXY light_rect(-2.758771896 - 0.5, -2.758771896 + 0.5, 1.5246 - 0.5, 1.5246 + 0.5, 0, new Light(vec3(40, 40, 40)));
+	//RectXY light_rect(-0.1, 0.1, 0.1, 0.2, 0.1, new Light(vec3(40, 40, 40)));
+	RectYZ light_rect(1.5246 - 0.5, 1.5246 + 0.5, -0.5, 0.5, -2.758771896, new Light(vec3(40, 40, 40)));
+	//Sphere light_rect(vec3(-2.758771896, 1.5246, 0), 0.2, new Light(vec3(40, 40, 40)));
+	cout << "scene tri size: " << obj.scene.size() << endl;
 	obj.scene.push_back(&light_rect);
-	cout << obj.scene.size() << endl;
 	Bvh bvh(obj.scene, 0.0, 1.0);
 
 	// light
@@ -198,7 +208,7 @@ void output_ppm()
 		light_sphere3(vec3(1.25, 0, 0), 0.1, new Light(vec3(100))),
 		light_sphere4(vec3(-1.25, 0, 0), 0.3, new Light(vec3(11.1111))),
 		light_sphere5(vec3(-3.75, 0, 0), 0.9, new Light(vec3(1.23457)));
-	cout << obj.scene.size() << endl;
+	cout << "scene tri size: " << obj.scene.size() << endl;
 	obj.scene.push_back(&light_sphere1);
 	obj.scene.push_back(&light_sphere2);
 	obj.scene.push_back(&light_sphere3);

@@ -20,16 +20,18 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 		if (depth < 50 && hit_rec.material_ptr->scatter(r, hit_rec, scatter_rec))
 		{
 			//cout << "depth" << depth << endl;
-			if (scatter_rec.is_specular)
+			if (scatter_rec.status == 2)
 			{
-				/*if (isnan(scatter_rec.specular_ray.direction()[0]))
-					cout << "specular_ray direction is nan" << endl;*/
-					/*return emit + scatter_rec._albedo *
-						color(Ray(hit_rec.p, scatter_rec.pdf_ptr->importance_sampling()),
-							object_list, light, depth + 1);*/
 				return scatter_rec.albedo * color(scatter_rec.specular_ray, object_list, light, depth + 1);
 			}
-			else
+			else if (scatter_rec.status == 1)
+			{
+				Ray reflected(hit_rec.p, scatter_rec.pdf_ptr->importance_sampling());
+				return scatter_rec.albedo * hit_rec.material_ptr->scattering_pdf_value_for_blinn_phone(r, hit_rec, reflected) *
+					color(reflected, object_list, light, depth + 1);
+				//return scatter_rec.albedo * color(scatter_rec.specular_ray, object_list, light, depth + 1);
+			}
+			else if(scatter_rec.status == 0)
 			{
 				std::shared_ptr<PDF_to_light> pdf_light(new PDF_to_light(light, hit_rec.p));
 				PDF_mix pdf(pdf_light, scatter_rec.pdf_ptr);
@@ -125,8 +127,8 @@ bool IsLittleEndian() {
 }
 
 //#define scene_random
-//#define scene_room
-#define scene_cup
+#define scene_room
+//#define scene_cup
 //#define scene_mis
 //#define OUTPIUT_PPM
 void output_ppm()
@@ -156,7 +158,7 @@ void output_ppm()
 #endif
 
 #ifdef scene_room
-	int nx = 512, ny = 512, ns = 1000;
+	int nx = 512, ny = 512, ns = 1000, output_ns = 100;
 	vec3 lookfrom(0.0, 0.0, 4),
 		lookat(0.0, 0.0, 0.0),
 		vup(0.0, 1.0, 0.0);
@@ -175,7 +177,7 @@ void output_ppm()
 #endif
 
 #ifdef scene_cup
-	int nx = 512, ny = 512, ns = 100, output_ns = 10;
+	int nx = 512, ny = 512, ns = 1000, output_ns = 100;
 	vec3 lookfrom(0.0, 0.64, 0.52),
 		lookat(0.0, 0.4, 0.3),
 		vup(0.0, 1.0, 0.0);
@@ -197,7 +199,7 @@ void output_ppm()
 #endif
 
 #ifdef scene_mis
-	int nx = 1152, ny = 864, ns = 1000;
+	int nx = 1152, ny = 864, ns = 1000, output_ns = 100;
 	vec3 lookfrom(0.0, 2.0, 15),
 		lookat(0.0, 1.69521, 14.0476),
 		vup(0.0, 0.952421, -0.304787);

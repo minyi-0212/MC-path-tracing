@@ -8,7 +8,7 @@ using std::vector;
 
 struct scatter_record
 {
-	bool is_specular;
+	int status;  // 0£ºlambertian 1: reflect 2:refract
 	Ray specular_ray; // direction
 	vec3 albedo; // attenuation
 	std::shared_ptr<PDF> pdf_ptr;
@@ -27,6 +27,11 @@ public:
 		const Ray& scattered)
 	{
 		return false;
+	}
+	virtual float scattering_pdf_value_for_blinn_phone(const Ray& r_in, const hit_record& rec, const Ray& scattered)
+	{
+		cout << "virtual construction: blinn phone" << endl;
+		return 0;
 	}
 	virtual vec3 emitted(const Ray& r_in, const hit_record& rec) const { return vec3(0); }
 };
@@ -96,6 +101,7 @@ public:
 	MTL(){};
 	virtual bool scatter(const Ray& r_in, const hit_record& rec, scatter_record& scatter_rec);
 	virtual float scattering_pdf(const Ray& r_in, const hit_record& rec, const Ray& scattered);
+	virtual float scattering_pdf_value_for_blinn_phone(const Ray& r_in, const hit_record& rec, const Ray& scattered);
 
 	mtl_param para;
 };

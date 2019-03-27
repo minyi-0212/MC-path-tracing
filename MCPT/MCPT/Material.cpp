@@ -246,7 +246,7 @@ float MTL::scattering_pdf_value_for_blinn_phone(const Ray& r_in, const hit_recor
 	H += normalize(scattered.direction());
 	H = normalize(H);
 	float tt = dot(normalize(rec.normal), H);
-	if (tt < 0)
+	if (tt < 0 || tt > 1)
 		cout << tt << endl;
 	return pow(tt, para.Ni);
 }

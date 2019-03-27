@@ -27,10 +27,14 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 			else if (scatter_rec.status == 1)
 			{
 				//Ray reflected(hit_rec.p, scatter_rec.pdf_ptr->importance_sampling());
-				Ray reflected(hit_rec.p, random_in_unit_sphere());
+				/*vec3 direction;
+				do {
+					direction = random_in_unit_sphere();
+				} while (dot(direction, hit_rec.normal) <= 0.9);
+				Ray reflected(hit_rec.p, direction);
 				return scatter_rec.albedo * hit_rec.material_ptr->scattering_pdf_value_for_blinn_phone(r, hit_rec, reflected) *
-					color(reflected, object_list, light, depth + 1);
-				//return scatter_rec.albedo * color(scatter_rec.specular_ray, object_list, light, depth + 1);
+					color(reflected, object_list, light, depth + 1);*/
+				return scatter_rec.albedo * color(scatter_rec.specular_ray, object_list, light, depth + 1);
 			}
 			else if(scatter_rec.status == 0)
 			{
@@ -128,9 +132,9 @@ bool IsLittleEndian() {
 }
 
 //#define scene_random
-#define scene_room
+//#define scene_room
 //#define scene_cup
-//#define scene_mis
+#define scene_mis
 //#define OUTPIUT_PPM
 void output_ppm()
 {
@@ -159,7 +163,7 @@ void output_ppm()
 #endif
 
 #ifdef scene_room
-	int nx = 512, ny = 512, ns = 1000, output_ns = 10;
+	int nx = 512, ny = 512, ns = 10000, output_ns = 10;
 	vec3 lookfrom(0.0, 0.0, 4),
 		lookat(0.0, 0.0, 0.0),
 		vup(0.0, 1.0, 0.0);
@@ -174,7 +178,7 @@ void output_ppm()
 	list<Hitable*> list;
 	list.push_back(&light_sphere);
 	Hitable_list light(list);
-	std::string filename = "./room/room";
+	std::string filename = "./room/room_test";
 #endif
 
 #ifdef scene_cup
@@ -200,7 +204,7 @@ void output_ppm()
 #endif
 
 #ifdef scene_mis
-	int nx = 1152, ny = 864, ns = 1000, output_ns = 100;
+	int nx = 1152, ny = 864, ns = 1000, output_ns = 10;
 	vec3 lookfrom(0.0, 2.0, 15),
 		lookat(0.0, 1.69521, 14.0476),
 		vup(0.0, 0.952421, -0.304787);

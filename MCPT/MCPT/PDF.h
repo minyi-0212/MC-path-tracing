@@ -26,6 +26,24 @@ private:
 	OrthonormalBases _frame;
 };
 
+class PDF_cos_n : public PDF
+{
+public:
+	PDF_cos_n(const vec3& n, float Ns) :Ns(Ns){
+		_frame.build_frame(n);
+		if (isnan(_frame[0][0]))
+		{
+			vec3 tmp(n), tmp2(_frame[0]);
+			cout << "in PDF_cos construct : input-" << tmp << ", output-" << tmp2 << endl;
+		}
+	}
+	virtual float value(const vec3& direction) const;
+	virtual vec3 importance_sampling() const;
+private:
+	float Ns;
+	OrthonormalBases _frame;
+};
+
 class PDF_to_light : public PDF
 {
 public:

@@ -34,7 +34,7 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 				Ray reflected(hit_rec.p, direction);
 				return scatter_rec.albedo * hit_rec.material_ptr->scattering_pdf_value_for_blinn_phone(r, hit_rec, reflected) *
 					color(reflected, object_list, light, depth + 1);*/
-				return scatter_rec.albedo * color(scatter_rec.specular_ray, object_list, light, depth + 1);
+				return emit + scatter_rec.albedo * color(scatter_rec.specular_ray, object_list, light, depth + 1);
 			}
 			else if(scatter_rec.status == 0)
 			{
@@ -43,16 +43,8 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 				Ray scattered;
 				do
 				{
-					/*if (light.in_obj(hit_rec.p))
-					{
-						scattered = Ray(hit_rec.p, scatter_rec.pdf_ptr->importance_sampling());
-						pdf_value = scatter_rec.pdf_ptr->value(scattered.direction());
-					}
-					else
-					{*/
-						scattered = Ray(hit_rec.p, pdf.importance_sampling());
-						pdf_value = pdf.value(scattered.direction());
-					//}
+					scattered = Ray(hit_rec.p, pdf.importance_sampling());
+					pdf_value = pdf.value(scattered.direction());
 					if (isnan(scattered.direction()[0]))
 						cout << "s nan" << endl;
 					if (isnan(pdf_value))

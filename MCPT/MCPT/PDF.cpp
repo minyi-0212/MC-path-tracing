@@ -21,12 +21,31 @@ float PDF_cos::value(const vec3& direction) const
 		return 0;
 }
 
-//#include <iostream>
 vec3 PDF_cos::importance_sampling() const
 {
 	vec3 tmp = random_cos_direction();
 	tmp = _frame.local(tmp);
 	if (isnan(tmp[0]) || length(tmp)==0)
+		std::cout << "pdf_cos: " << tmp[0] << " " << tmp[1] << " " << tmp[2] << std::endl;
+	return tmp;
+}
+
+float PDF_cos_n::value(const vec3& direction) const
+{
+	if (isnan(_frame[0][0]))
+		cout << "pdf_cos frame nan" << endl;
+	float cos = dot(normalize(direction), _frame[2]);
+	if (cos > 0)
+		return cos / M_PI;
+	else
+		return 0;
+}
+
+vec3 PDF_cos_n::importance_sampling() const
+{
+	vec3 tmp = random_cos_direction();
+	tmp = _frame.local(tmp);
+	if (isnan(tmp[0]) || length(tmp) == 0)
 		std::cout << "pdf_cos: " << tmp[0] << " " << tmp[1] << " " << tmp[2] << std::endl;
 	return tmp;
 }

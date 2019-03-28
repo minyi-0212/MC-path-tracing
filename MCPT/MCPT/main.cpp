@@ -131,10 +131,10 @@ bool IsLittleEndian() {
 	return false;
 }
 
-//#define scene_random
+#define scene_random
 //#define scene_room
 //#define scene_cup
-#define scene_mis
+//#define scene_mis
 //#define OUTPIUT_PPM
 void output_ppm()
 {
@@ -142,15 +142,15 @@ void output_ppm()
 	/*int nx = 200, ny = 100, ns = 100;
 	vec3 left_lower_corner(-2, -1, -1), up(0, 2, 0), right(4, 0, 0), origin(0, 0, 0);
 	Camera cam(left_lower_corner, up, right, origin);*/
-	int nx = 1200, ny = 800, ns = 10;
+	int nx = 1200, ny = 800, ns = 1000, output_ns=10;
 	vec3 lookfrom(13, 2, 3), lookat(0, 0, 0), vup(0, 1, 0);
 	Camera cam(lookfrom, lookat, vup, 20, float(nx) / float(ny));
 	list<Hitable*> obj_list;
 	//list.push_back(new Sphere(vec3(-1, 0, -1), -0.45, new Dielectric(1.5)));
 	random_scene(obj_list);
 	//Hitable_list object_list(list);
-	Sphere light_sphere(vec3(0, -1, 0), 2.0, new Diffuse_light(vec3(4, 4, 3.2)));
-	RectXY light_rect(3, 5, 1, 2, -2, new Diffuse_light(vec3(5, 5, 4)));
+	Sphere light_sphere(vec3(0, -1, 0), 2.0, new Light(vec3(4, 4, 3.2)));
+	RectXY light_rect(3, 5, 1, 2, -2, new Light(vec3(5, 5, 4)));
 	obj_list.push_back(&light_sphere);
 	obj_list.push_back(&light_rect);
 	Bvh bvh(obj_list, 0.0, 1.0);
@@ -159,18 +159,146 @@ void output_ppm()
 	light_list.push_back(&light_sphere);
 	light_list.push_back(&light_rect);
 	Hitable_list light(light_list);
-	std::string filename = "./output3/random";
+	std::string filename = "./output3/random_test";
 #endif
 
-#ifdef scene_room
-	int nx = 512, ny = 512, ns = 10000, output_ns = 10;
+//#ifdef scene_room
+//	int nx = 512, ny = 512, ns = 10000, output_ns = 10;
+//	vec3 lookfrom(0.0, 0.0, 4),
+//		lookat(0.0, 0.0, 0.0),
+//		vup(0.0, 1.0, 0.0);
+//	Camera cam(lookfrom, lookat, vup, 50., float(nx) / float(ny));
+//	Object obj("./scenes/Scene01/room.obj");
+//	Sphere light_sphere(vec3(0.0, 1.589, -1.274), 0.2, new Light(vec3(50, 50, 40)));
+//	cout << "scene tri size: " << obj.scene.size() << endl << "sample: " << ns << endl;
+//	obj.scene.push_back(&light_sphere);
+//	Bvh bvh(obj.scene, 0.0, 1.0);
+//
+//	// light
+//	list<Hitable*> list;
+//	list.push_back(&light_sphere);
+//	Hitable_list light(list);
+//	std::string filename = "./room/room_test";
+//#endif
+//
+//#ifdef scene_cup
+//	int nx = 512, ny = 512, ns = 1000, output_ns = 100;
+//	vec3 lookfrom(0.0, 0.64, 0.52),
+//		lookat(0.0, 0.4, 0.3),
+//		vup(0.0, 1.0, 0.0);
+//	Camera cam(lookfrom, lookat, vup, 60., float(nx) / float(ny));
+//	Object obj("./scenes/Scene02/cup.obj");
+//	//-2.758771896,1.5246,0
+//	//RectXY light_rect(-0.1, 0.1, 0.1, 0.2, 0.1, new Light(vec3(40, 40, 40)));
+//	RectYZ light_rect(1.5246 - 0.5, 1.5246 + 0.5, 0 - 0.5, 0 + 0.5, -2.7587, new Light(vec3(40, 40, 40)));
+//	//Sphere light_rect(vec3(-2.758771896, 1.5246, 0), 0.2, new Light(vec3(40, 40, 40)));
+//	cout << "scene tri size: " << obj.scene.size() << endl;
+//	obj.scene.push_back(&light_rect);
+//	Bvh bvh(obj.scene, 0.0, 1.0);
+//
+//	// light
+//	list<Hitable*> light_list;
+//	light_list.push_back(&light_rect);
+//	Hitable_list light(light_list);
+//	std::string filename = "./cup/cup_test";
+//#endif
+//
+//#ifdef scene_mis
+//	int nx = 1152, ny = 864, ns = 1000, output_ns = 10;
+//	vec3 lookfrom(0.0, 2.0, 15),
+//		lookat(0.0, 1.69521, 14.0476),
+//		vup(0.0, 0.952421, -0.304787);
+//	Camera cam(lookfrom, lookat, vup, 28, float(nx) / float(ny));
+//	Object obj("./scenes/Scene03/VeachMIS.obj");
+//	Sphere light_sphere1(vec3(-10, 10, 4), 0.5, new Light(vec3(800))),
+//		light_sphere2(vec3(3.75, 0, 0), 0.033, new Light(vec3(901.803))),
+//		light_sphere3(vec3(1.25, 0, 0), 0.1, new Light(vec3(100))),
+//		light_sphere4(vec3(-1.25, 0, 0), 0.3, new Light(vec3(11.1111))),
+//		light_sphere5(vec3(-3.75, 0, 0), 0.9, new Light(vec3(1.23457)));
+//	cout << "scene tri size: " << obj.scene.size() << endl;
+//	obj.scene.push_back(&light_sphere1);
+//	obj.scene.push_back(&light_sphere2);
+//	obj.scene.push_back(&light_sphere3);
+//	obj.scene.push_back(&light_sphere4);
+//	obj.scene.push_back(&light_sphere5);
+//	Bvh bvh(obj.scene, 0.0, 1.0);
+//
+//	// light
+//	list<Hitable*> list;
+//	list.push_back(&light_sphere1);
+//	list.push_back(&light_sphere2);
+//	list.push_back(&light_sphere3);
+//	list.push_back(&light_sphere4);
+//	list.push_back(&light_sphere5);
+//	Hitable_list light(list);
+//	std::string filename = "./VeachMIS/VeachMIS_test";
+//#endif
+
+	cout << "output: " << filename << endl;
+	vector<vec3> rgb(nx*ny, vec3(0.));
+	Performance p;
+	p.start();
+	for (int s = 0; s <= ns; s++)
+	{
+#pragma omp parallel for
+		for (int j = 0; j < ny; j++)
+		{
+			for (int i = 0; i < nx; i++)
+			{
+				int index = nx - 1 - i + (ny - 1 - j) * nx;
+				float u = (float(i) + random_float_0_1()) / float(nx),
+					v = (float(j) + random_float_0_1()) / float(ny);
+				rgb[index] = vec3(s) * rgb[index] + color(cam.get_ray(u, v), bvh, light, 0);
+				rgb[index] /= (s + 1);
+			}
+		}
+		if (s % output_ns == 0)
+		{
+			cout << "sample " << s << ", compute time " << p.end() << "s." << endl;
+			p.start();
+#ifdef OUTPIUT_PPM
+			float max_color = 0;
+			std::ofstream fout(filename + std::to_string(s) + ".ppm");
+			fout << "P3" << endl << nx << " " << ny << endl << 255 << endl; //P is capital
+			for (auto c : rgb)
+			{
+				if (c[0] > max_color)
+					max_color = c[0];
+				if (c[1] > max_color)
+					max_color = c[1];
+				if (c[2] > max_color)
+					max_color = c[2];
+				fout << int(255.99*c[0]) << " " << int(255.99*c[1]) << " " << int(255.99*c[2]) << endl;
+			}
+			fout.close();
+			cout << "max_color : " << int(255.99*max_color) << endl;
+#endif
+#ifndef OUTPIUT_PPM
+			std::ofstream fout(filename + std::to_string(s) + ".pfm", std::ios::out | std::ios::binary);
+			fout << "PF" << endl << nx << " " << ny << endl << (IsLittleEndian() ? -1 : 1) << endl;
+			for (auto c : rgb)
+			{
+				fout.write(reinterpret_cast<char *>(&c[0]), sizeof(float));
+				fout.write(reinterpret_cast<char *>(&c[1]), sizeof(float));
+				fout.write(reinterpret_cast<char *>(&c[2]), sizeof(float));
+			}
+			fout.close();
+#endif
+		}
+	}
+}
+
+void render_scene_room(int ns = 1000, int output_ns = 100)
+{
+	int nx = 512, ny = 512;
 	vec3 lookfrom(0.0, 0.0, 4),
 		lookat(0.0, 0.0, 0.0),
 		vup(0.0, 1.0, 0.0);
 	Camera cam(lookfrom, lookat, vup, 50., float(nx) / float(ny));
 	Object obj("./scenes/Scene01/room.obj");
 	Sphere light_sphere(vec3(0.0, 1.589, -1.274), 0.2, new Light(vec3(50, 50, 40)));
-	cout << "scene tri size: " << obj.scene.size() << endl << "sample: " << ns << endl;
+	cout << "tri num: " << obj.scene.size() << endl 
+		<< "sample: " << output_ns << "," << ns << endl;
 	obj.scene.push_back(&light_sphere);
 	Bvh bvh(obj.scene, 0.0, 1.0);
 
@@ -179,10 +307,63 @@ void output_ppm()
 	list.push_back(&light_sphere);
 	Hitable_list light(list);
 	std::string filename = "./room/room_test";
+	cout << "output: " << filename << endl;
+	vector<vec3> rgb(nx*ny, vec3(0.));
+	Performance p;
+	p.start();
+	for (int s = 0; s <= ns; s++)
+	{
+#pragma omp parallel for
+		for (int j = 0; j < ny; j++)
+		{
+			for (int i = 0; i < nx; i++)
+			{
+				int index = nx - 1 - i + (ny - 1 - j) * nx;
+				float u = (float(i) + random_float_0_1()) / float(nx),
+					v = (float(j) + random_float_0_1()) / float(ny);
+				rgb[index] = vec3(s) * rgb[index] + color(cam.get_ray(u, v), bvh, light, 0);
+				rgb[index] /= (s + 1);
+			}
+		}
+		if (s % output_ns == 0)
+		{
+			cout << "sample " << s << ", compute time " << p.end() << "s." << endl;
+			p.start();
+#ifdef OUTPIUT_PPM
+			float max_color = 0;
+			std::ofstream fout(filename + std::to_string(s) + ".ppm");
+			fout << "P3" << endl << nx << " " << ny << endl << 255 << endl; //P is capital
+			for (auto c : rgb)
+			{
+				if (c[0] > max_color)
+					max_color = c[0];
+				if (c[1] > max_color)
+					max_color = c[1];
+				if (c[2] > max_color)
+					max_color = c[2];
+				fout << int(255.99*c[0]) << " " << int(255.99*c[1]) << " " << int(255.99*c[2]) << endl;
+			}
+			fout.close();
+			cout << "max_color : " << int(255.99*max_color) << endl;
 #endif
+#ifndef OUTPIUT_PPM
+			std::ofstream fout(filename + std::to_string(s) + ".pfm", std::ios::out | std::ios::binary);
+			fout << "PF" << endl << nx << " " << ny << endl << (IsLittleEndian() ? -1 : 1) << endl;
+			for (auto c : rgb)
+			{
+				fout.write(reinterpret_cast<char *>(&c[0]), sizeof(float));
+				fout.write(reinterpret_cast<char *>(&c[1]), sizeof(float));
+				fout.write(reinterpret_cast<char *>(&c[2]), sizeof(float));
+			}
+			fout.close();
+#endif
+		}
+	}
+}
 
-#ifdef scene_cup
-	int nx = 512, ny = 512, ns = 1000, output_ns = 100;
+void render_scene_cup(int ns = 1000, int output_ns = 100)
+{
+	int nx = 512, ny = 512;
 	vec3 lookfrom(0.0, 0.64, 0.52),
 		lookat(0.0, 0.4, 0.3),
 		vup(0.0, 1.0, 0.0);
@@ -192,7 +373,8 @@ void output_ppm()
 	//RectXY light_rect(-0.1, 0.1, 0.1, 0.2, 0.1, new Light(vec3(40, 40, 40)));
 	RectYZ light_rect(1.5246 - 0.5, 1.5246 + 0.5, 0 - 0.5, 0 + 0.5, -2.7587, new Light(vec3(40, 40, 40)));
 	//Sphere light_rect(vec3(-2.758771896, 1.5246, 0), 0.2, new Light(vec3(40, 40, 40)));
-	cout << "scene tri size: " << obj.scene.size() << endl;
+	cout << "tri num: " << obj.scene.size() << endl
+		<< "sample: " << output_ns << "," << ns << endl;
 	obj.scene.push_back(&light_rect);
 	Bvh bvh(obj.scene, 0.0, 1.0);
 
@@ -200,11 +382,64 @@ void output_ppm()
 	list<Hitable*> light_list;
 	light_list.push_back(&light_rect);
 	Hitable_list light(light_list);
-	std::string filename = "./cup/cup";
+	std::string filename = "./cup/cup_test";
+	cout << "output: " << filename << endl;
+	vector<vec3> rgb(nx*ny, vec3(0.));
+	Performance p;
+	p.start();
+	for (int s = 0; s <= ns; s++)
+	{
+#pragma omp parallel for
+		for (int j = 0; j < ny; j++)
+		{
+			for (int i = 0; i < nx; i++)
+			{
+				int index = nx - 1 - i + (ny - 1 - j) * nx;
+				float u = (float(i) + random_float_0_1()) / float(nx),
+					v = (float(j) + random_float_0_1()) / float(ny);
+				rgb[index] = vec3(s) * rgb[index] + color(cam.get_ray(u, v), bvh, light, 0);
+				rgb[index] /= (s + 1);
+			}
+		}
+		if (s % output_ns == 0)
+		{
+			cout << "sample " << s << ", compute time " << p.end() << "s." << endl;
+			p.start();
+#ifdef OUTPIUT_PPM
+			float max_color = 0;
+			std::ofstream fout(filename + std::to_string(s) + ".ppm");
+			fout << "P3" << endl << nx << " " << ny << endl << 255 << endl; //P is capital
+			for (auto c : rgb)
+			{
+				if (c[0] > max_color)
+					max_color = c[0];
+				if (c[1] > max_color)
+					max_color = c[1];
+				if (c[2] > max_color)
+					max_color = c[2];
+				fout << int(255.99*c[0]) << " " << int(255.99*c[1]) << " " << int(255.99*c[2]) << endl;
+			}
+			fout.close();
+			cout << "max_color : " << int(255.99*max_color) << endl;
 #endif
+#ifndef OUTPIUT_PPM
+			std::ofstream fout(filename + std::to_string(s) + ".pfm", std::ios::out | std::ios::binary);
+			fout << "PF" << endl << nx << " " << ny << endl << (IsLittleEndian() ? -1 : 1) << endl;
+			for (auto c : rgb)
+			{
+				fout.write(reinterpret_cast<char *>(&c[0]), sizeof(float));
+				fout.write(reinterpret_cast<char *>(&c[1]), sizeof(float));
+				fout.write(reinterpret_cast<char *>(&c[2]), sizeof(float));
+			}
+			fout.close();
+#endif
+		}
+	}
+}
 
-#ifdef scene_mis
-	int nx = 1152, ny = 864, ns = 1000, output_ns = 10;
+void render_scene_mis(int ns=1000, int output_ns=100)
+{
+	int nx = 1152, ny = 864;
 	vec3 lookfrom(0.0, 2.0, 15),
 		lookat(0.0, 1.69521, 14.0476),
 		vup(0.0, 0.952421, -0.304787);
@@ -215,7 +450,8 @@ void output_ppm()
 		light_sphere3(vec3(1.25, 0, 0), 0.1, new Light(vec3(100))),
 		light_sphere4(vec3(-1.25, 0, 0), 0.3, new Light(vec3(11.1111))),
 		light_sphere5(vec3(-3.75, 0, 0), 0.9, new Light(vec3(1.23457)));
-	cout << "scene tri size: " << obj.scene.size() << endl;
+	cout << "tri num: " << obj.scene.size() << endl
+		<< "sample: " << output_ns << "," << ns << endl;
 	obj.scene.push_back(&light_sphere1);
 	obj.scene.push_back(&light_sphere2);
 	obj.scene.push_back(&light_sphere3);
@@ -232,8 +468,6 @@ void output_ppm()
 	list.push_back(&light_sphere5);
 	Hitable_list light(list);
 	std::string filename = "./VeachMIS/VeachMIS_test";
-#endif
-
 	cout << "output: " << filename << endl;
 	vector<vec3> rgb(nx*ny, vec3(0.));
 	Performance p;
@@ -292,6 +526,13 @@ int main(int argc, char *argv[])
 {
 	Performance p;
 	p.start();
-	output_ppm();
+	if (!strcmp(argv[1], "room"))
+		render_scene_room(1000, 10);
+	else if (!strcmp(argv[1], "cup"))
+		render_scene_cup(1000, 10);
+	else if (!strcmp(argv[1], "VeachMIS"))
+		render_scene_mis(1000, 10);
+	else
+		output_ppm();
 	cout << "total time: " << p.end() << "s." << endl;
 }

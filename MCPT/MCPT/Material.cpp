@@ -130,7 +130,7 @@ bool MTL::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& sc
 		return false;
 
 	// refraction
-	if (para.illum &&para.Ni != 1.0) 
+	if (para.illum && para.Ni != 1.0) 
 	{
 		// reflection
 		vec3 reflected = reflect(r_in.direction(), hit_rec.normal);
@@ -169,7 +169,7 @@ bool MTL::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& sc
 			scatter_rec.status = 1;
 			scatter_rec.albedo = para.Kd;
 			scatter_rec.specular_ray = Ray(hit_rec.p, reflected);
-			scatter_rec.pdf_ptr = std::make_shared<PDF_cos>(reflected);
+			//scatter_rec.pdf_ptr = std::make_shared<PDF_cos>(reflected);
 			if (length(reflected) == 0)
 			{
 				cout << "MTL Ni:reflected length is 0: " << reflected << endl;
@@ -201,8 +201,8 @@ bool MTL::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& sc
 		float tt = dot(normalize(hit_rec.normal), H);
 		scatter_rec.albedo = para.Ks*pow(dot(normalize(hit_rec.normal), H), para.Ni);*/
 		scatter_rec.albedo = para.Ks;
-		scatter_rec.specular_ray = Ray(hit_rec.p, reflected);
-		scatter_rec.pdf_ptr = std::make_shared<PDF_cos>(reflected);
+		scatter_rec.specular_ray = Ray(hit_rec.p, reflected + vec3(0.1 - 0.1 * para.Ns / 1000) * random_in_unit_sphere());
+		//scatter_rec.pdf_ptr = std::make_shared<PDF_cos>(reflected);
 		if (length(reflected) == 0)
 		{
 			cout << "MTL reflected length is 0: " << reflected << endl;
@@ -240,7 +240,7 @@ float MTL::scattering_pdf_value_for_blinn_phone(const Ray& r_in, const hit_recor
 	tmp += normalize(r_in.direction());
 	tmp /= 2;
 	return (4 + 4.0 / (para.Ns + 1))*dot(normalize(scattered.direction()), normalize(tmp));*/
-	if(dot(-r_in.direction(), rec.normal) <= 0 || dot(scattered.direction(), rec.normal)<=0)
+	if (dot(-r_in.direction(), rec.normal) <= 0 || dot(scattered.direction(), rec.normal) <= 0)
 		return 0;
 	vec3 H = -normalize(r_in.direction());
 	H += normalize(scattered.direction());

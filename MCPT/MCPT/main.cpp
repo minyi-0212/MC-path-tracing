@@ -231,7 +231,7 @@ void output_ppm()
 	list.push_back(&light_sphere4);
 	list.push_back(&light_sphere5);
 	Hitable_list light(list);
-	std::string filename = "./VeachMIS/VeachMIS";
+	std::string filename = "./VeachMIS/VeachMIS_test";
 #endif
 
 	cout << "output: " << filename << endl;

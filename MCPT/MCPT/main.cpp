@@ -26,15 +26,15 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 			}
 			else if (scatter_rec.status == 1)
 			{
-				//Ray reflected(hit_rec.p, scatter_rec.pdf_ptr->importance_sampling());
+				Ray reflected(hit_rec.p, scatter_rec.pdf_ptr->importance_sampling());
 				/*vec3 direction;
 				do {
 					direction = random_in_unit_sphere();
 				} while (dot(direction, hit_rec.normal) <= 0.9);
-				Ray reflected(hit_rec.p, direction);
+				Ray reflected(hit_rec.p, direction);*/
 				return scatter_rec.albedo * hit_rec.material_ptr->scattering_pdf_value_for_blinn_phone(r, hit_rec, reflected) *
-					color(reflected, object_list, light, depth + 1);*/
-				return emit + scatter_rec.albedo * color(scatter_rec.specular_ray, object_list, light, depth + 1);
+					color(reflected, object_list, light, depth + 1);
+				//return scatter_rec.albedo * color(scatter_rec.specular_ray, object_list, light, depth + 1);
 			}
 			else if(scatter_rec.status == 0)
 			{

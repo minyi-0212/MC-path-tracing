@@ -27,7 +27,7 @@ bool Object::read_mtl(string mtl_file)
 		{
 			file >> material_name;
 			material = new MTL();
-			material->para.name = material_name;
+			//material->para.name = material_name;
 			_mtl_map.insert(make_pair(material_name, material));
 			cout << "---" << material_name << endl;
 		}

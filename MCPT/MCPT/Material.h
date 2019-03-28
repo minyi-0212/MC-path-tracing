@@ -88,12 +88,10 @@ private:
 
 struct mtl_param
 {
-	std::string name;
 	float Ns, // shiness
 		Ni; // refractive index
 	int illum;
 	glm::vec3 Ka, Kd, Ks, Tf; // ambient diffuse specular transmission filter
-
 };
 
 class MTL : public Material

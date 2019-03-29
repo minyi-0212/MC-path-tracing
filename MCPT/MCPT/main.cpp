@@ -23,6 +23,9 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 			//cout << "depth" << depth << endl;
 			if (scatter_rec.status == 2)
 			{
+				if (length(scatter_rec.specular_ray.direction()) > 1 - 0.0000001
+						&& length(scatter_rec.specular_ray.direction()) < 1 - 0.0000001)
+					cout << "refract direction not normalize!" << endl;
 				return scatter_rec.albedo * color(scatter_rec.specular_ray, object_list, light, depth + 1);
 			}
 			else if (scatter_rec.status == 1)
@@ -33,6 +36,8 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 				} while (dot(direction, hit_rec.normal) <= 0.9);
 				Ray reflected(hit_rec.p, direction);*/
 				Ray reflected(hit_rec.p, reflect(r.direction(), scatter_rec.pdf_ptr->importance_sampling()));
+				if (length(reflected.direction()) != 1)
+					cout << "specular direction not normalize!" << endl;
 				return scatter_rec.albedo * hit_rec.material_ptr->scattering_pdf_value_for_blinn_phone(r, hit_rec, reflected) *
 					color(reflected, object_list, light, depth + 1);
 				/*return scatter_rec.albedo * hit_rec.material_ptr->scattering_pdf_value_for_blinn_phone(r, hit_rec, scatter_rec.specular_ray) *
@@ -52,6 +57,9 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 						cout << "s nan" << endl;
 					if (isnan(pdf_value))
 						cout << "pdf nan" << endl;
+					if (length(scattered.direction()) > 1 - 0.0000001
+						&& length(scattered.direction()) < 1 - 0.0000001)
+						cout << "diffuse direction not normalize: length=" << length(scattered.direction()) << endl;
 				} while (pdf_value == 0);
 				/*if (pdf_value == 0)
 				{
@@ -367,6 +375,8 @@ void render_scene_cup(const char* path, int ns = 1000, int output_ns = 100)
 	int nx = 512, ny = 512;
 	vec3 lookfrom(0.0, 0.64, 0.52),
 		lookat(0.0, 0.4, 0.3),
+		/*lookfrom(0.0, 6, 5),
+		lookat(0.0, 4, 3),*/
 		vup(0.0, 1.0, 0.0);
 	Camera cam(lookfrom, lookat, vup, 60., float(nx) / float(ny));
 	Object obj("./scenes/Scene02/cup.obj");
@@ -538,8 +548,9 @@ void render_scene_mis(const char* path, int ns=1000, int output_ns=100)
 
 int main(int argc, char *argv[])
 {
-	int ns = 10000, ns_out = 100;
-	std::string path("./result/result3");
+	int ns = 1000, ns_out = 1000;
+	//std::string path("./result/result3");
+	std::string path("./output4");
 	Performance p;
 	p.start();
 	if (!strcmp(argv[1], "room"))
@@ -551,4 +562,5 @@ int main(int argc, char *argv[])
 	else
 		output_ppm();
 	cout << "total time: " << p.end() << "s." << endl;
+	//system("pause");
 }

@@ -90,13 +90,13 @@ bool Dielectric::scatter(const Ray& r_in, const hit_record& hit_rec, vec3& atten
 		outward_normal = -hit_rec.normal;
 		ni_over_nt = _Ni;
 		//cosine = Ni * dot(r_in.direction(), rec.normal) / r_in.direction().length();
-		cosine = dot(r_in.direction(), hit_rec.normal) / r_in.direction().length();
+		cosine = dot(r_in.direction(), hit_rec.normal);
 		cosine = sqrt(1 - _Ni * _Ni*(1 - cosine * cosine));
 	}
 	else {
 		outward_normal = hit_rec.normal;
 		ni_over_nt = 1.0f / _Ni;
-		cosine = -dot(r_in.direction(), hit_rec.normal) / r_in.direction().length();
+		cosine = -dot(r_in.direction(), hit_rec.normal);
 	}
 
 	if (refract(r_in.direction(), outward_normal, ni_over_nt, refracted))
@@ -143,15 +143,13 @@ bool MTL::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& sc
 		if (dot(r_in.direction(), hit_rec.normal) > 0) {
 			outward_normal = -hit_rec.normal;
 			ni_over_nt = para.Ni;
-			cosine = dot(r_in.direction(), hit_rec.normal) / r_in.direction().length();
-			cosine = sqrt(1 - para.Ni * para.Ni*(1 - cosine * cosine));
+			cosine = para.Ni*dot(r_in.direction(), hit_rec.normal);
 		}
 		else {
 			outward_normal = hit_rec.normal;
 			ni_over_nt = 1.0f / para.Ni;
-			cosine = -dot(r_in.direction(), hit_rec.normal) / r_in.direction().length();
+			cosine = -dot(r_in.direction(), hit_rec.normal);
 		}
-
 		if (refract(r_in.direction(), outward_normal, ni_over_nt, refracted))
 		{
 			/*if (length(refracted) == 0)
@@ -228,7 +226,7 @@ bool MTL::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& sc
 
 float MTL::scattering_pdf(const Ray& r_in, const hit_record& rec, const Ray& scattered)
 {
-	float cosine = dot(rec.normal, normalize(scattered.direction()));
+	float cosine = dot(rec.normal, scattered.direction());
 	if (cosine < 0)
 		cosine = 0;
 	return cosine / M_PI;
@@ -244,8 +242,8 @@ float MTL::scattering_pdf_value_for_blinn_phone(const Ray& r_in, const hit_recor
 	return result;*/
 	if (dot(-r_in.direction(), rec.normal) <= 0 || dot(scattered.direction(), rec.normal) <= 0)
 		return 0;
-	vec3 H = -normalize(r_in.direction());
-	H += normalize(scattered.direction());
+	vec3 H = -r_in.direction();
+	H += scattered.direction();
 	H = normalize(H);
 	float tt = dot(normalize(rec.normal), H);
 	/*if (acos(tt) * 180 / M_PI > 30 || acos(tt) * 180 / M_PI < 0)

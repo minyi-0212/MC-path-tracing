@@ -85,7 +85,7 @@ vec3 Sphere::random(const vec3& origin) const
 	vec3 tmp(random_to_sphere(radius, distance));
 	if (isnan(tmp[0]))
 		cout << "sphere: nan - " << tmp << " " << radius << " " << distance << endl;
-	return frame.local(tmp);
+	return normalize(frame.local(tmp));
 }
 
 bool Sphere::in_obj(const vec3& p) const
@@ -350,8 +350,9 @@ float RectYZ::pdf_value(const vec3& origin, const vec3& v) const
 	hit_record rec;
 	if (this->hit(Ray(origin, v), RAY_MIN_T, FLT_MAX, rec)) {
 		float area = (y1 - y0)*(z1 - z0);
-		float distance_squared = rec.t * rec.t * length(v)* length(v);
-		float cosine = fabs(dot(v, rec.normal) / length(v));
+		//cout << length(v) << endl;
+		float distance_squared = rec.t * rec.t /** length(v)* length(v)*/;
+		float cosine = fabs(dot(v, rec.normal) /*/ length(v)*/);
 		return  distance_squared / (cosine * area);
 	}
 	else

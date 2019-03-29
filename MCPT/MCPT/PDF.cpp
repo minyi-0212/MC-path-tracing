@@ -50,6 +50,7 @@ float PDF_cos_n::value(const vec3& direction) const
 vec3 PDF_cos_n::importance_sampling() const
 {
 	vec3 tmp = random_cos_n_direction(Ns);
+	//cout << tmp << endl;
 	tmp = _frame.local(tmp);
 	if (isnan(tmp[0]) || length(tmp) == 0)
 		std::cout << "pdf_cos: " << tmp[0] << " " << tmp[1] << " " << tmp[2] << std::endl;

@@ -1,6 +1,7 @@
 #include <fstream>
 //#include <glut.h>
 #include <gtc/matrix_transform.hpp>
+#include <direct.h>
 #include "Material.h"
 #include "Camera.h"
 #include "obj_loader.h"
@@ -26,14 +27,16 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 			}
 			else if (scatter_rec.status == 1)
 			{
-				Ray reflected(hit_rec.p, scatter_rec.pdf_ptr->importance_sampling());
 				/*vec3 direction;
 				do {
 					direction = random_in_unit_sphere();
 				} while (dot(direction, hit_rec.normal) <= 0.9);
 				Ray reflected(hit_rec.p, direction);*/
+				Ray reflected(hit_rec.p, reflect(r.direction(), scatter_rec.pdf_ptr->importance_sampling()));
 				return scatter_rec.albedo * hit_rec.material_ptr->scattering_pdf_value_for_blinn_phone(r, hit_rec, reflected) *
 					color(reflected, object_list, light, depth + 1);
+				/*return scatter_rec.albedo * hit_rec.material_ptr->scattering_pdf_value_for_blinn_phone(r, hit_rec, scatter_rec.specular_ray) *
+					color(scatter_rec.specular_ray, object_list, light, depth + 1);*/
 				//return scatter_rec.albedo * color(scatter_rec.specular_ray, object_list, light, depth + 1);
 			}
 			else if(scatter_rec.status == 0)
@@ -280,7 +283,7 @@ void output_ppm()
 	}
 }
 
-void render_scene_room(int ns = 1000, int output_ns = 100)
+void render_scene_room(const char* path, int ns = 1000, int output_ns = 100)
 {
 	int nx = 512, ny = 512;
 	vec3 lookfrom(0.0, 0.0, 4),
@@ -298,8 +301,12 @@ void render_scene_room(int ns = 1000, int output_ns = 100)
 	list<Hitable*> list;
 	list.push_back(&light_sphere);
 	Hitable_list light(list);
-	std::string filename = "./room/room_test";
-	cout << "output: " << filename << endl;
+	/*std::string filename = "./room/room";
+	cout << "output: " << filename << endl;*/
+	char output_path[MAX_PATH], output_file[MAX_PATH];
+	sprintf_s(output_path, "%s/room", path);
+	_mkdir(output_path);
+
 	vector<vec3> rgb(nx*ny, vec3(0.));
 	Performance p;
 	p.start();
@@ -323,7 +330,8 @@ void render_scene_room(int ns = 1000, int output_ns = 100)
 			p.start();
 #ifdef OUTPIUT_PPM
 			float max_color = 0;
-			std::ofstream fout(filename + std::to_string(s) + ".ppm");
+			sprintf_s(output_file, "%s/room%d.ppm", output_path, s);
+			std::ofstream fout(output_file);
 			fout << "P3" << endl << nx << " " << ny << endl << 255 << endl; //P is capital
 			for (auto c : rgb)
 			{
@@ -339,7 +347,8 @@ void render_scene_room(int ns = 1000, int output_ns = 100)
 			cout << "max_color : " << int(255.99*max_color) << endl;
 #endif
 #ifndef OUTPIUT_PPM
-			std::ofstream fout(filename + std::to_string(s) + ".pfm", std::ios::out | std::ios::binary);
+			sprintf_s(output_file, "%s/room%d.pfm", output_path, s);
+			std::ofstream fout(output_file, std::ios::out | std::ios::binary);
 			fout << "PF" << endl << nx << " " << ny << endl << (IsLittleEndian() ? -1 : 1) << endl;
 			for (auto c : rgb)
 			{
@@ -353,7 +362,7 @@ void render_scene_room(int ns = 1000, int output_ns = 100)
 	}
 }
 
-void render_scene_cup(int ns = 1000, int output_ns = 100)
+void render_scene_cup(const char* path, int ns = 1000, int output_ns = 100)
 {
 	int nx = 512, ny = 512;
 	vec3 lookfrom(0.0, 0.64, 0.52),
@@ -374,8 +383,12 @@ void render_scene_cup(int ns = 1000, int output_ns = 100)
 	list<Hitable*> light_list;
 	light_list.push_back(&light_rect);
 	Hitable_list light(light_list);
-	std::string filename = "./cup/cup_test";
-	cout << "output: " << filename << endl;
+	/*std::string filename = "./cup/cup";
+	cout << "output: " << filename << endl;*/
+	char output_path[MAX_PATH], output_file[MAX_PATH];
+	sprintf_s(output_path, "%s/cup", path);
+	_mkdir(output_path);
+
 	vector<vec3> rgb(nx*ny, vec3(0.));
 	Performance p;
 	p.start();
@@ -399,7 +412,8 @@ void render_scene_cup(int ns = 1000, int output_ns = 100)
 			p.start();
 #ifdef OUTPIUT_PPM
 			float max_color = 0;
-			std::ofstream fout(filename + std::to_string(s) + ".ppm");
+			sprintf_s(output_file, "%s/cup%d.ppm", output_path, s);
+			std::ofstream fout(output_file);
 			fout << "P3" << endl << nx << " " << ny << endl << 255 << endl; //P is capital
 			for (auto c : rgb)
 			{
@@ -415,7 +429,8 @@ void render_scene_cup(int ns = 1000, int output_ns = 100)
 			cout << "max_color : " << int(255.99*max_color) << endl;
 #endif
 #ifndef OUTPIUT_PPM
-			std::ofstream fout(filename + std::to_string(s) + ".pfm", std::ios::out | std::ios::binary);
+			sprintf_s(output_file, "%s/cup%d.pfm", output_path, s);
+			std::ofstream fout(output_file, std::ios::out | std::ios::binary);
 			fout << "PF" << endl << nx << " " << ny << endl << (IsLittleEndian() ? -1 : 1) << endl;
 			for (auto c : rgb)
 			{
@@ -429,7 +444,7 @@ void render_scene_cup(int ns = 1000, int output_ns = 100)
 	}
 }
 
-void render_scene_mis(int ns=1000, int output_ns=100)
+void render_scene_mis(const char* path, int ns=1000, int output_ns=100)
 {
 	int nx = 1152, ny = 864;
 	vec3 lookfrom(0.0, 2.0, 15),
@@ -459,8 +474,13 @@ void render_scene_mis(int ns=1000, int output_ns=100)
 	list.push_back(&light_sphere4);
 	list.push_back(&light_sphere5);
 	Hitable_list light(list);
-	std::string filename = "./VeachMIS/VeachMIS_test";
-	cout << "output: " << filename << endl;
+	/*std::string filename = "./VeachMIS/VeachMIS";
+	cout << "output: " << filename << endl;*/
+	char output_path[MAX_PATH], output_file[MAX_PATH];
+	sprintf_s(output_path, "%s/VeachMIS", path);
+	_mkdir(output_path);
+
+
 	vector<vec3> rgb(nx*ny, vec3(0.));
 	Performance p;
 	p.start();
@@ -484,7 +504,8 @@ void render_scene_mis(int ns=1000, int output_ns=100)
 			p.start();
 #ifdef OUTPIUT_PPM
 			float max_color = 0;
-			std::ofstream fout(filename + std::to_string(s) + ".ppm");
+			sprintf_s(output_file, "%s/VeachMIS%d.ppm", output_path, s);
+			std::ofstream fout(output_file);
 			fout << "P3" << endl << nx << " " << ny << endl << 255 << endl; //P is capital
 			for (auto c : rgb)
 			{
@@ -500,7 +521,8 @@ void render_scene_mis(int ns=1000, int output_ns=100)
 			cout << "max_color : " << int(255.99*max_color) << endl;
 #endif
 #ifndef OUTPIUT_PPM
-			std::ofstream fout(filename + std::to_string(s) + ".pfm", std::ios::out | std::ios::binary);
+			sprintf_s(output_file, "%s/VeachMIS%d.pfm", output_path, s);
+			std::ofstream fout(output_file, std::ios::out | std::ios::binary);
 			fout << "PF" << endl << nx << " " << ny << endl << (IsLittleEndian() ? -1 : 1) << endl;
 			for (auto c : rgb)
 			{
@@ -516,14 +538,16 @@ void render_scene_mis(int ns=1000, int output_ns=100)
 
 int main(int argc, char *argv[])
 {
+	int ns = 10000, ns_out = 100;
+	std::string path("./result/result3");
 	Performance p;
 	p.start();
 	if (!strcmp(argv[1], "room"))
-		render_scene_room(1000, 10);
+		render_scene_room(path.c_str(), ns, ns_out);
 	else if (!strcmp(argv[1], "cup"))
-		render_scene_cup(1000, 10);
+		render_scene_cup(path.c_str(), ns, ns_out);
 	else if (!strcmp(argv[1], "VeachMIS"))
-		render_scene_mis(1000, 10);
+		render_scene_mis(path.c_str(), ns, ns_out);
 	else
 		output_ppm();
 	cout << "total time: " << p.end() << "s." << endl;

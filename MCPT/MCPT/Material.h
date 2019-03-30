@@ -11,7 +11,7 @@ vec3 reflect(const vec3& v, const vec3& n);
 struct scatter_record
 {
 	int status;  // 0£ºlambertian 1: reflect 2:refract
-	Ray specular_ray; // direction
+	Ray scatter_ray; // direction
 	vec3 albedo; // attenuation
 	std::shared_ptr<PDF> pdf_ptr;
 };

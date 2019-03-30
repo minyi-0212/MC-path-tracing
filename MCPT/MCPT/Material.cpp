@@ -41,7 +41,7 @@ bool Metal::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& 
 	vec3 ref = reflect(normalize(r_in.direction()), hit_rec.normal);
 	scatter_rec.status = 2;
 	scatter_rec.albedo = _albedo;
-	scatter_rec.specular_ray = Ray(hit_rec.p, ref + _fuzzier * random_in_unit_sphere());
+	scatter_rec.scatter_ray = Ray(hit_rec.p, ref + _fuzzier * random_in_unit_sphere());
 	scatter_rec.pdf_ptr = nullptr;
 	return true;
 }
@@ -105,9 +105,9 @@ bool Dielectric::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_rec
 
 	// choose
 	if (random_float_0_1() < reflect_prob)
-		scatter_rec.specular_ray = Ray(hit_rec.p, reflected);
+		scatter_rec.scatter_ray = Ray(hit_rec.p, reflected);
 	else
-		scatter_rec.specular_ray = Ray(hit_rec.p, refracted);
+		scatter_rec.scatter_ray = Ray(hit_rec.p, refracted);
 	return true;
 }
 
@@ -160,8 +160,8 @@ bool MTL::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& sc
 		if (random_float_0_1() < reflect_prob)
 		{
 			scatter_rec.status = 2;
-			scatter_rec.albedo = para.Kd;
-			scatter_rec.specular_ray = Ray(hit_rec.p, reflected /*+ vec3(0.5 / (para.Ns + 1)) * random_in_unit_sphere()*/);
+				scatter_rec.albedo = para.Kd;
+			scatter_rec.scatter_ray = Ray(hit_rec.p, reflected /*+ vec3(0.5 / (para.Ns + 1)) * random_in_unit_sphere()*/);
 			//scatter_rec.pdf_ptr = std::make_shared<PDF_cos_n>(hit_rec.normal, para.Ni);
 			if (length(reflected) == 0)
 			{
@@ -171,10 +171,11 @@ bool MTL::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& sc
 		else
 		{
 			scatter_rec.status = 2;
-			scatter_rec.albedo = vec3(1.0);
-			//scatter_rec.albedo = vec3(para.Kd[0]);
-			scatter_rec.specular_ray = Ray(hit_rec.p, refracted);
-			//scatter_rec.pdf_ptr = std::make_shared<PDF_cos_n>(refracted, para.Ni);
+			if (1 - para.Tf[0] > para.Kd[0])
+				scatter_rec.albedo = vec3(1) - para.Tf;
+			else
+				scatter_rec.albedo = vec3(para.Kd[0]);
+			scatter_rec.scatter_ray = Ray(hit_rec.p, refracted);
 			if (length(refracted) == 0)
 			{
 				cout << "MTL Ni:refracted length is 0: " << refracted << endl;
@@ -190,9 +191,9 @@ bool MTL::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& sc
 		&& (dot(-r_in.direction(), hit_rec.normal) >= 0))
 	{
 		vec3 reflected = reflect(normalize(r_in.direction()), normalize(hit_rec.normal));
-		scatter_rec.status = 2;
+		scatter_rec.status = 1;
 		scatter_rec.albedo = para.Ks;
-		scatter_rec.specular_ray = Ray(hit_rec.p, reflected /*+ vec3(0.1*(1 - para.Ns / 1000)) * random_in_unit_sphere()*/);
+		scatter_rec.scatter_ray = Ray(hit_rec.p, reflected /*+ vec3(0.1*(1 - para.Ns / 1000)) * random_in_unit_sphere()*/);
 		scatter_rec.pdf_ptr = std::make_shared<PDF_cos_n>(hit_rec.normal, para.Ns);
 		return true;
 	}

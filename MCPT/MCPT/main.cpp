@@ -23,7 +23,7 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 		{
 			if (scatter_rec.status == 2)
 			{
-				return scatter_rec.albedo * color(scatter_rec.specular_ray, object_list, light, depth + 1);
+				return scatter_rec.albedo * color(scatter_rec.scatter_ray, object_list, light, depth + 1);
 			}
 			else if (scatter_rec.status == 1)
 			{

@@ -12,7 +12,6 @@ struct hit_record
 	vec3 p, normal;
 	Material* material_ptr;
 };
-//#include <iostream>
 
 // object
 class Hitable
@@ -34,7 +33,7 @@ class Sphere : public Hitable
 {
 public:
 	Sphere() {}
-	Sphere(vec3 center, float radius, Material* const material):center(center), radius(radius), material(material){}
+	Sphere(vec3 center, float radius, Material* const material) :center(center), radius(radius), material(material) {}
 	virtual bool hit(const Ray& r, float t_min, float t_max, hit_record& rec) const;
 	virtual bool bounding_box(float t0, float t1, AABB& box) const;
 	virtual float pdf_value(const vec3& origin, const vec3& v)  const;
@@ -62,7 +61,6 @@ private:
 	mutable list<Hitable*> l;
 };
 
-// bvh -- ´ýÐÞ¸ÄÎªkdtree
 class Bvh : public Hitable {
 public:
 	Bvh() {}
@@ -94,7 +92,7 @@ public:
 class RectXZ : public Hitable {
 public:
 	RectXZ() {}
-	RectXZ(float _x0, float _x1, float _z0, float _z1, float _k, Material *mat) : 
+	RectXZ(float _x0, float _x1, float _z0, float _z1, float _k, Material *mat) :
 		x0(_x0), x1(_x1), z0(_z0), z1(_z1), k(_k), material(mat) {};
 	virtual bool hit(const Ray& r, float t0, float t1, hit_record& rec) const;
 	virtual bool bounding_box(float t0, float t1, AABB& box) const {
@@ -111,7 +109,7 @@ private:
 class RectYZ : public Hitable {
 public:
 	RectYZ() {}
-	RectYZ(float _y0, float _y1, float _z0, float _z1, float _k, Material *mat) : 
+	RectYZ(float _y0, float _y1, float _z0, float _z1, float _k, Material *mat) :
 		y0(_y0), y1(_y1), z0(_z0), z1(_z1), k(_k), material(mat) {};
 	virtual bool hit(const Ray& r, float t0, float t1, hit_record& rec) const;
 	virtual bool bounding_box(float t0, float t1, AABB& box) const {

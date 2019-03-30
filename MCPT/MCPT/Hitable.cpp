@@ -52,7 +52,6 @@ float Sphere::pdf_value(const vec3& origin, const vec3& v)  const
 	if (!this->hit(Ray(origin, v), RAY_MIN_T, INT_MAX, hit_rec) || (radius / length(center - origin)) > 1)
 		return 0;
 	else
-		//if (this->hit(Ray(origin, v), RAY_MIN_T, INT_MAX, hit_rec))
 	{
 		float cos_theta_max = sqrt(1 - radius * radius / (length(center - origin)*length(center - origin))),
 			solid_angle = 2 * M_PI*(1 - cos_theta_max);
@@ -60,14 +59,12 @@ float Sphere::pdf_value(const vec3& origin, const vec3& v)  const
 			cout << "sphere light pdf value is nan " << endl;
 		return  1 / solid_angle;
 	}
-	/*else
-		return 0;*/
 }
 
 inline vec3 random_to_sphere(float radius, float distance_square)
 {
 	float cos_theta = radius / distance_square;
-	if (cos_theta > 1) 
+	if (cos_theta > 1)
 		cos_theta = 1;
 	float r1 = random_float_0_1(),
 		r2 = random_float_0_1(),
@@ -83,8 +80,6 @@ vec3 Sphere::random(const vec3& origin) const
 	OrthonormalBases frame;
 	frame.build_frame(direction);
 	vec3 tmp(random_to_sphere(radius, distance));
-	if (isnan(tmp[0]))
-		cout << "sphere: nan - " << tmp << " " << radius << " " << distance << endl;
 	return normalize(frame.local(tmp));
 }
 
@@ -350,9 +345,8 @@ float RectYZ::pdf_value(const vec3& origin, const vec3& v) const
 	hit_record rec;
 	if (this->hit(Ray(origin, v), RAY_MIN_T, FLT_MAX, rec)) {
 		float area = (y1 - y0)*(z1 - z0);
-		//cout << length(v) << endl;
-		float distance_squared = rec.t * rec.t /** length(v)* length(v)*/;
-		float cosine = fabs(dot(v, rec.normal) /*/ length(v)*/);
+		float distance_squared = rec.t * rec.t;
+		float cosine = fabs(dot(v, rec.normal));
 		return  distance_squared / (cosine * area);
 	}
 	else

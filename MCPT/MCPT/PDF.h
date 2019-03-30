@@ -12,13 +12,8 @@ public:
 class PDF_cos : public PDF
 {
 public:
-	PDF_cos(const vec3& n) { 
+	PDF_cos(const vec3& n) {
 		_frame.build_frame(n);
-		if (isnan(_frame[0][0]))
-		{
-			vec3 tmp(n), tmp2(_frame[0]);
-			cout <<"in PDF_cos construct : input-"<< tmp << ", output-" << tmp2 << endl;
-		}
 	}
 	virtual float value(const vec3& direction) const;
 	virtual vec3 importance_sampling() const;
@@ -29,13 +24,8 @@ private:
 class PDF_cos_n : public PDF
 {
 public:
-	PDF_cos_n(const vec3& n, float Ns) :Ns(Ns){
+	PDF_cos_n(const vec3& n, float Ns) :Ns(Ns) {
 		_frame.build_frame(n);
-		if (isnan(_frame[0][0]))
-		{
-			vec3 tmp(n), tmp2(_frame[0]);
-			cout << "in PDF_cos_n construct : input-" << tmp << ", output-" << tmp2 << endl;
-		}
 	}
 	virtual float value(const vec3& direction) const;
 	virtual vec3 importance_sampling() const;

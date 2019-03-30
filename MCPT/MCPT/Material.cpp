@@ -65,7 +65,6 @@ bool refract(const vec3& v, const vec3& n, float ni_over_nt, vec3& refracted)
 		return false;
 }
 
-//发生折射的概率，schlick：近似地计算出不同入射角旳菲涅耳反射比
 float schlick(float cosine, float _Ni)
 {
 	float r0 = (1 - _Ni) / (1 + _Ni);
@@ -73,7 +72,6 @@ float schlick(float cosine, float _Ni)
 	return r0 + (1 - r0)*pow((1 - cosine), 5);
 }
 
-//bool Dielectric::scatter(const Ray& r_in, const hit_record& hit_rec, vec3& attenuation, Ray& scattered) const
 bool Dielectric::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& scatter_rec) const
 {
 	// reflection
@@ -131,7 +129,7 @@ bool MTL::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& sc
 		return false;
 
 	// refraction
-	if (para.illum && para.Ni != 1.0) 
+	if (para.illum && para.Ni != 1.0)
 	{
 		// reflection
 		vec3 reflected = reflect(r_in.direction(), hit_rec.normal);
@@ -153,10 +151,6 @@ bool MTL::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& sc
 		}
 		if (refract(r_in.direction(), outward_normal, ni_over_nt, refracted))
 		{
-			/*if (length(refracted) == 0)
-			{
-				cout << "debug:refract direction is (0,0,0)" << endl;
-			}*/
 			reflect_prob = schlick(cosine, para.Ni);
 		}
 		else
@@ -190,39 +184,24 @@ bool MTL::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& sc
 	}
 
 	// reflection
-	if (has_specular 
-		/*&& (random_float_0_1() > (has_diffuse / has_specular))*/
-		&& (random_float_0_1() > 0.5)
+	if (has_specular
+		&& (random_float_0_1() > (has_diffuse / has_specular))
+		//&& (random_float_0_1() > 0.5)
 		&& (dot(-r_in.direction(), hit_rec.normal) >= 0))
 	{
 		vec3 reflected = reflect(normalize(r_in.direction()), normalize(hit_rec.normal));
-		scatter_rec.status = 1;
-		/*vec3 H = -normalize(r_in.direction());
-		H += normalize(reflected);
-		H = normalize(H);
-		float tt = dot(normalize(hit_rec.normal), H);
-		scatter_rec.albedo = para.Ks*pow(dot(normalize(hit_rec.normal), H), para.Ni);*/
+		scatter_rec.status = 2;
 		scatter_rec.albedo = para.Ks;
-		//scatter_rec.specular_ray = Ray(hit_rec.p, reflected + vec3(0.1*(1 - para.Ns / 1000)) * random_in_unit_sphere());
+		scatter_rec.specular_ray = Ray(hit_rec.p, reflected /*+ vec3(0.1*(1 - para.Ns / 1000)) * random_in_unit_sphere()*/);
 		scatter_rec.pdf_ptr = std::make_shared<PDF_cos_n>(hit_rec.normal, para.Ns);
-		if (length(reflected) == 0)
-		{
-			cout << "MTL reflected length is 0: " << reflected << endl;
-		}
 		return true;
 	}
 	// lambertian
 	else
 	{
-		//cout << "diffuse :" << para.Kd << endl;
 		scatter_rec.status = 0;
 		scatter_rec.albedo = para.Kd;
 		scatter_rec.pdf_ptr = std::make_shared<PDF_cos>(hit_rec.normal);
-		if (length(hit_rec.normal) == 0)
-		{
-			vec3 tmp(hit_rec.normal);
-			cout << "MTL diffuse normal length is 0: " << tmp << endl;
-		}
 		return true;
 	}
 }
@@ -249,9 +228,5 @@ float MTL::scattering_pdf_value_for_blinn_phone(const Ray& r_in, const hit_recor
 	H += scattered.direction();
 	H = normalize(H);
 	float tt = dot(normalize(rec.normal), H);
-	/*if (acos(tt) * 180 / M_PI > 30 || acos(tt) * 180 / M_PI < 0)
-		cout << acos(tt) * 180 / M_PI << endl;*/
-	/*if (tt < 0 || tt > 1)
-		cout << tt << endl;*/
 	return pow(tt, para.Ni);
 }

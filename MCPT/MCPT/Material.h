@@ -64,7 +64,6 @@ class Dielectric : public Material
 {
 public:
 	Dielectric(float _Ni) : _Ni(_Ni) {}
-	//virtual bool scatter(const Ray& r_in, const hit_record& rec, vec3& attenuation, Ray& scattered) const;
 	virtual bool scatter(const Ray& r_in, const hit_record& rec, scatter_record& scatter_rec) const;
 
 private:
@@ -75,7 +74,6 @@ class Light : public Material
 {
 public:
 	Light(const vec3& v) :_Le(v) {};
-	//virtual bool scatter(const Ray& r_in, const hit_record& rec, vec3& attenuation, Ray& scattered) const
 	virtual bool scatter(const Ray& r_in, const hit_record& rec, scatter_record& scatter_rec) const
 	{
 		return false;
@@ -97,7 +95,7 @@ struct mtl_param
 class MTL : public Material
 {
 public:
-	MTL(){};
+	MTL() {};
 	virtual bool scatter(const Ray& r_in, const hit_record& rec, scatter_record& scatter_rec) const;
 	virtual float scattering_pdf(const Ray& r_in, const hit_record& rec, const Ray& scattered) const;
 	virtual float scattering_pdf_value_for_blinn_phone(const Ray& r_in, const hit_record& rec, const Ray& scattered) const;

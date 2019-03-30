@@ -4,7 +4,7 @@
 using std::cout;
 using std::endl;
 
-Performance::Performance():time(0)
+Performance::Performance() :time(0)
 {
 	QueryPerformanceCounter(&start_time);
 }

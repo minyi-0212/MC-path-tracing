@@ -4,8 +4,8 @@
 class Ray
 {
 public:
-	Ray(){}
-	Ray(const vec3& o, const vec3& d):_o(o)
+	Ray() {}
+	Ray(const vec3& o, const vec3& d) :_o(o)
 	{
 		_d = normalize(d);
 	}

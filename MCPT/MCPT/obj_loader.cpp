@@ -16,7 +16,6 @@ bool Object::read_mtl(string mtl_file)
 	bool flag = false;
 	string material_name;
 	MTL* material = nullptr;
-	//Material* mtl;
 	string type;
 	int illumination_model;
 
@@ -27,7 +26,6 @@ bool Object::read_mtl(string mtl_file)
 		{
 			file >> material_name;
 			material = new MTL();
-			//material->para.name = material_name;
 			_mtl_map.insert(make_pair(material_name, material));
 			cout << "---" << material_name << endl;
 		}
@@ -119,8 +117,6 @@ void Object::read_obj(string obj_file)
 			is >> type;
 			if (type != "default")
 				cout << "obj: " << type << endl;
-			/*if (type == "table")
-				break;*/
 		}
 		// the using mtl name
 		else if (type == "usemtl")
@@ -151,14 +147,13 @@ void Object::read_obj(string obj_file)
 			//f 7/13/13 5/14/14 3/3/15 1/1/16
 			while (is >> type) // 7/13/13
 			{
-				/*if (!(mtlname == "lambert2SG" 
+				/*if (!(mtlname == "lambert2SG"
 					|| mtlname == "breakfast_room_cup_Material_005"
 					|| mtlname == "breakfast_room_cup_Ceramic_001"
 					|| mtlname == "breakfast_room_cup_Gold_Paint"
 					|| mtlname == "initialShadingGroup"
 					))
 					break;*/
-				//cout << type << endl;
 				strcpy_s(t, type.c_str());
 				p = strtok_s(t, d, &next);
 				if (p)

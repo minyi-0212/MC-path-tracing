@@ -23,8 +23,6 @@ inline vec3 random_cos_n_direction(float Ns)
 
 float PDF_cos::value(const vec3& direction) const
 {
-	if (isnan(_frame[0][0]))
-		cout << "pdf_cos frame nan" << endl;
 	float cos = dot(direction, _frame[2]);
 	if (cos > 0)
 		return cos / M_PI;
@@ -36,8 +34,7 @@ vec3 PDF_cos::importance_sampling() const
 {
 	vec3 tmp = random_cos_direction();
 	tmp = _frame.local(tmp);
-	if (isnan(tmp[0]) || length(tmp)==0)
-		std::cout << "pdf_cos: " << tmp[0] << " " << tmp[1] << " " << tmp[2] << std::endl;
+
 	return normalize(tmp);
 }
 
@@ -50,10 +47,7 @@ float PDF_cos_n::value(const vec3& direction) const
 vec3 PDF_cos_n::importance_sampling() const
 {
 	vec3 tmp = random_cos_n_direction(Ns);
-	//cout << tmp << endl;
 	tmp = _frame.local(tmp);
-	if (isnan(tmp[0]) || length(tmp) == 0)
-		std::cout << "pdf_cos: " << tmp[0] << " " << tmp[1] << " " << tmp[2] << std::endl;
 	return normalize(tmp);
 }
 
@@ -65,9 +59,6 @@ float PDF_to_light::value(const vec3& direction) const
 vec3 PDF_to_light::importance_sampling() const
 {
 	vec3 tmp = obj->random(origin);
-	if (isnan(tmp[0]))
-		std::cout << "PDF_to_light: " << tmp[0] << " " << tmp[1] << " " << tmp[2] << std::endl;
-
 	return normalize(tmp);
 }
 

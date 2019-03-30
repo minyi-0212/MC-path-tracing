@@ -15,7 +15,7 @@ inline vec3 random_cos_n_direction(float Ns)
 	float r1 = random_float_0_1(),
 		r2 = random_float_0_1(),
 		phi = 2 * M_PI * r1,
-		theta = acos(pow(r2, 1 / (Ns + 1)));
+		theta = acos(pow(r2, 1 / (/*10 **/ Ns + 1)));
 	return vec3(cos(phi) * sin(theta),
 		sin(phi) * sin(theta),
 		cos(theta));

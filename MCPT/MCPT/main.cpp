@@ -35,8 +35,8 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 					direction = random_in_unit_sphere();
 				} while (dot(direction, hit_rec.normal) <= 0.9);
 				Ray reflected(hit_rec.p, direction);*/
-				Ray reflected(hit_rec.p, reflect(r.direction(), scatter_rec.pdf_ptr->importance_sampling()));
-				if (length(reflected.direction()) != 1)
+				Ray reflected(hit_rec.p, normalize(reflect(r.direction(), scatter_rec.pdf_ptr->importance_sampling())));
+				if (length(reflected.direction()) > 1.000001 || length(reflected.direction()) < 1 - 0.000001)
 					cout << "specular direction not normalize!" << endl;
 				return scatter_rec.albedo * hit_rec.material_ptr->scattering_pdf_value_for_blinn_phone(r, hit_rec, reflected) *
 					color(reflected, object_list, light, depth + 1);
@@ -82,42 +82,43 @@ vec3 color(const Ray& r, Hitable& object_list, Hitable& light, const int depth)
 		else
 			return emit;
 	}
-	else
-		return vec3(0);
-	/*vec3 unit_direction = r.direction();
+	/*else
+		return vec3(0);*/
+	vec3 unit_direction = r.direction();
 	float t = unit_direction[0] == 0 && unit_direction[1] == 0 && unit_direction[2] == 0 ?
 	0.5 : 0.5*(normalize(unit_direction)[1] + 1.0);
-	return vec3(1.0 - t, 1.0 - t, 1.0 - t) + vec3(t*0.5, t*0.7, t*1.0);*/
+	return vec3(1.0 - t, 1.0 - t, 1.0 - t) + vec3(t*0.5, t*0.7, t*1.0);
 }
 
 void random_scene(list<Hitable*>& list)
 {
-	int n = 0;
-	//list.push_back(new Sphere(vec3(0, -1000, 0), 1000, new Lambertian(vec3(0.5))));
+	int n = 5;
+	list.push_back(new Sphere(vec3(0, -1000, 0), 1000, new Lambertian(vec3(0.5))));
 	for (int a = -n; a < n; a++) {
 		for (int b = -n; b < n; b++) {
 			float choose_mat = random_float_0_1();
 			vec3 center(a + 0.9*random_float_0_1(), 0.2, b + 0.9*random_float_0_1());
 			if ((center - vec3(4, 0.2, 0)).length() > 0.9) {
 				if (choose_mat < 0.8) {  // diffuse
-					list.push_back(new Sphere(center, 0.2,
+					list.push_back(new Sphere(center, center[1],
 						new Lambertian(vec3(random_float_0_1()*random_float_0_1(),
 							random_float_0_1()*random_float_0_1(), random_float_0_1()*random_float_0_1()))));
 				}
 				else if (choose_mat < 0.95) { // metal
-					list.push_back(new Sphere(center, 0.2,
+					list.push_back(new Sphere(center, center[1],
 						new Metal(vec3(0.5*(1 + random_float_0_1()), 0.5*(1 + random_float_0_1()), 0.5*(1 + random_float_0_1())),
 							0.5*random_float_0_1())));
 				}
 				else {  // glass
-					list.push_back(new Sphere(center, 0.2, new Dielectric(1.5)));
+					list.push_back(new Sphere(center, center[1], new Dielectric(1.5)));
 				}
 			}
 		}
 	}
 
-	list.push_back(new Sphere(vec3(-4, 1, 0), 0.2, new Lambertian(vec3(0.8, 0.1, 0.1))));
-	//list.push_back(new Sphere(vec3(4, 1, 0), 1.0, new Metal(vec3(0.7, 0.6, 0.5), 0.0)));
+	list.push_back(new Sphere(vec3(-4, 0.7, 2), 0.7, new Lambertian(vec3(0.6, 0.3, 0.1))));
+	list.push_back(new Sphere(vec3(6, 0.6, 1), 0.6, new Dielectric(1.5)));
+	list.push_back(new Sphere(vec3(0, 0.8, 0), 0.8, new Metal(vec3(0.7, 0.6, 0.5), 0.0)));
 	//list.push_back(new Sphere(vec3(0, -1, 0), 2.0, new Diffuse_light(vec3(4))));
 	//list.push_back(new RectXY(3, 5, 1, 2, -2, new Diffuse_light(vec3(4))));
 	/*list.push_back(new Triangle(vec3(-4, 1, 0), vec3(4, 1, 0), vec3(0, 2, 0), new Lambertian(vec3(0.4, 0.8, 0.1))));
@@ -145,15 +146,15 @@ void output_ppm()
 	/*int nx = 200, ny = 100, ns = 100;
 	vec3 left_lower_corner(-2, -1, -1), up(0, 2, 0), right(4, 0, 0), origin(0, 0, 0);
 	Camera cam(left_lower_corner, up, right, origin);*/
-	int nx = 1200, ny = 800, ns = 1000, output_ns=10;
+	int nx = 512, ny = 512, ns = 500, output_ns = 100;
 	vec3 lookfrom(13, 2, 3), lookat(0, 0, 0), vup(0, 1, 0);
 	Camera cam(lookfrom, lookat, vup, 20, float(nx) / float(ny));
 	list<Hitable*> obj_list;
 	//list.push_back(new Sphere(vec3(-1, 0, -1), -0.45, new Dielectric(1.5)));
 	random_scene(obj_list);
 	//Hitable_list object_list(list);
-	Sphere light_sphere(vec3(0, -1, 0), 2.0, new Light(vec3(4, 4, 3.2)));
-	RectXY light_rect(3, 5, 1, 2, -2, new Light(vec3(5, 5, 4)));
+	Sphere light_sphere(vec3(10, 10, 0), 2.0, new Light(vec3(4, 4, 3.2)));
+	RectXZ light_rect(3, 5, 1, 2, -2, new Light(vec3(5, 5, 4)));
 	obj_list.push_back(&light_sphere);
 	obj_list.push_back(&light_rect);
 	Bvh bvh(obj_list, 0.0, 1.0);
@@ -313,6 +314,7 @@ void render_scene_room(const char* path, int ns = 1000, int output_ns = 100)
 	cout << "output: " << filename << endl;*/
 	char output_path[MAX_PATH], output_file[MAX_PATH];
 	sprintf_s(output_path, "%s/room", path);
+	cout << "output: " << output_path << endl;
 	_mkdir(output_path);
 
 	vector<vec3> rgb(nx*ny, vec3(0.));
@@ -397,6 +399,7 @@ void render_scene_cup(const char* path, int ns = 1000, int output_ns = 100)
 	cout << "output: " << filename << endl;*/
 	char output_path[MAX_PATH], output_file[MAX_PATH];
 	sprintf_s(output_path, "%s/cup", path);
+	cout << "output: " << output_path << endl;
 	_mkdir(output_path);
 
 	vector<vec3> rgb(nx*ny, vec3(0.));
@@ -488,8 +491,8 @@ void render_scene_mis(const char* path, int ns=1000, int output_ns=100)
 	cout << "output: " << filename << endl;*/
 	char output_path[MAX_PATH], output_file[MAX_PATH];
 	sprintf_s(output_path, "%s/VeachMIS", path);
+	cout << "output: " << output_path << endl;
 	_mkdir(output_path);
-
 
 	vector<vec3> rgb(nx*ny, vec3(0.));
 	Performance p;
@@ -546,19 +549,105 @@ void render_scene_mis(const char* path, int ns=1000, int output_ns=100)
 	}
 }
 
+void render_scene_my(const char* path, int ns = 1000, int output_ns = 100)
+{
+	int nx = 512, ny = 512;
+	vec3 lookfrom(0.0, 0.0, 4),
+		lookat(0.0, 0.0, 0.0),
+		vup(0.0, 1.0, 0.0);
+	Camera cam(lookfrom, lookat, vup, 50., float(nx) / float(ny));
+	Object obj("./scenes/Scene04/test.obj");
+	/*obj.scene.push_back(new Sphere(vec3(-1, -1, -1), 0.2, new Metal(vec3(0.7, 0.6, 0.5), 0.5)));
+	obj.scene.push_back(new Sphere(vec3(1, -1.5, -1.4), 0.2, new Dielectric(1.5)));*/
+	obj.scene.push_back(new RectXY(-1.8, 1.8, -1.8, 1.8, -1.9, new Metal(vec3(1.0), 0.0)));
+	Sphere light_sphere(vec3(0.0, 1.589, -1.274), 0.2, new Light(vec3(50, 50, 40)));
+	cout << "tri num: " << obj.scene.size() << endl
+		<< "sample: " << output_ns << "," << ns << endl;
+	obj.scene.push_back(&light_sphere);
+	Bvh bvh(obj.scene, 0.0, 1.0);
+
+	// light
+	list<Hitable*> list;
+	list.push_back(&light_sphere);
+	Hitable_list light(list);
+	/*std::string filename = "./room/room";
+	cout << "output: " << filename << endl;*/
+	char output_path[MAX_PATH], output_file[MAX_PATH];
+	sprintf_s(output_path, "%s/my", path);
+	cout << "output: " << output_path << endl;
+	_mkdir(output_path);
+
+	vector<vec3> rgb(nx*ny, vec3(0.));
+	Performance p;
+	p.start();
+	for (int s = 0; s <= ns; s++)
+	{
+#pragma omp parallel for
+		for (int j = 0; j < ny; j++)
+		{
+			for (int i = 0; i < nx; i++)
+			{
+				int index = nx - 1 - i + (ny - 1 - j) * nx;
+				float u = (float(i) + random_float_0_1()) / float(nx),
+					v = (float(j) + random_float_0_1()) / float(ny);
+				rgb[index] = vec3(s) * rgb[index] + color(cam.get_ray(u, v), bvh, light, 0);
+				rgb[index] /= (s + 1);
+			}
+		}
+		if (s % output_ns == 0)
+		{
+			cout << "sample " << s << ", compute time " << p.end() << "s." << endl;
+			p.start();
+#ifdef OUTPIUT_PPM
+			float max_color = 0;
+			sprintf_s(output_file, "%s/my%d.ppm", output_path, s);
+			std::ofstream fout(output_file);
+			fout << "P3" << endl << nx << " " << ny << endl << 255 << endl; //P is capital
+			for (auto c : rgb)
+			{
+				if (c[0] > max_color)
+					max_color = c[0];
+				if (c[1] > max_color)
+					max_color = c[1];
+				if (c[2] > max_color)
+					max_color = c[2];
+				fout << int(255.99*c[0]) << " " << int(255.99*c[1]) << " " << int(255.99*c[2]) << endl;
+			}
+			fout.close();
+			cout << "max_color : " << int(255.99*max_color) << endl;
+#endif
+#ifndef OUTPIUT_PPM
+			sprintf_s(output_file, "%s/my%d.pfm", output_path, s);
+			std::ofstream fout(output_file, std::ios::out | std::ios::binary);
+			fout << "PF" << endl << nx << " " << ny << endl << (IsLittleEndian() ? -1 : 1) << endl;
+			for (auto c : rgb)
+			{
+				fout.write(reinterpret_cast<char *>(&c[0]), sizeof(float));
+				fout.write(reinterpret_cast<char *>(&c[1]), sizeof(float));
+				fout.write(reinterpret_cast<char *>(&c[2]), sizeof(float));
+			}
+			fout.close();
+#endif
+		}
+	}
+}
+
+
 int main(int argc, char *argv[])
 {
-	int ns = 1000, ns_out = 1000;
-	//std::string path("./result/result3");
-	std::string path("./output4");
+	int ns = 10000, ns_out = 10;
+	std::string path("./result/result5");
+	//std::string path("./output4");
 	Performance p;
 	p.start();
 	if (!strcmp(argv[1], "room"))
-		render_scene_room(path.c_str(), ns, ns_out);
+		render_scene_room(path.c_str(), 5000, 100);
 	else if (!strcmp(argv[1], "cup"))
-		render_scene_cup(path.c_str(), ns, ns_out);
+		render_scene_cup(path.c_str(), 5000, 100);
 	else if (!strcmp(argv[1], "VeachMIS"))
-		render_scene_mis(path.c_str(), ns, ns_out);
+		render_scene_mis(path.c_str(), 10000, 100);
+	else if (!strcmp(argv[1], "my"))
+		render_scene_my(path.c_str(), 5000, 100);
 	else
 		output_ppm();
 	cout << "total time: " << p.end() << "s." << endl;

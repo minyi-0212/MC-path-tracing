@@ -9,8 +9,7 @@ vec3 random_in_unit_sphere()
 	return p;
 }
 
-bool Lambertian::scatter(const Ray& r_in, const hit_record& rec,
-	scatter_record& scatter_rec)
+bool Lambertian::scatter(const Ray& r_in, const hit_record& rec, scatter_record& scatter_rec) const
 {
 	scatter_rec.status = 0;
 	scatter_rec.albedo = _albedo;
@@ -23,8 +22,7 @@ bool Lambertian::scatter(const Ray& r_in, const hit_record& rec,
 	return true;
 }
 
-float Lambertian::scattering_pdf(const Ray& r_in, const hit_record& rec,
-	const Ray& scattered)
+float Lambertian::scattering_pdf(const Ray& r_in, const hit_record& rec, const Ray& scattered) const
 {
 	float cosine = dot(rec.normal, normalize(scattered.direction()));
 	if (cosine < 0)
@@ -41,7 +39,7 @@ vec3 reflect(const vec3& v, const vec3& n)
 bool Metal::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& scatter_rec) const
 {
 	vec3 ref = reflect(normalize(r_in.direction()), hit_rec.normal);
-	scatter_rec.status = 1;
+	scatter_rec.status = 2;
 	scatter_rec.albedo = _albedo;
 	scatter_rec.specular_ray = Ray(hit_rec.p, ref + _fuzzier * random_in_unit_sphere());
 	scatter_rec.pdf_ptr = nullptr;
@@ -75,14 +73,17 @@ float schlick(float cosine, float _Ni)
 	return r0 + (1 - r0)*pow((1 - cosine), 5);
 }
 
-bool Dielectric::scatter(const Ray& r_in, const hit_record& hit_rec, vec3& attenuation, Ray& scattered) const {
+//bool Dielectric::scatter(const Ray& r_in, const hit_record& hit_rec, vec3& attenuation, Ray& scattered) const
+bool Dielectric::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& scatter_rec) const
+{
 	// reflection
 	vec3 reflected = reflect(r_in.direction(), hit_rec.normal);
 
 	// refraction
 	vec3 outward_normal;
 	float ni_over_nt;
-	attenuation = vec3(1.0, 1.0, 1.0);
+	scatter_rec.status = 2;
+	scatter_rec.albedo = vec3(1.0, 1.0, 1.0);
 	vec3 refracted;
 	float reflect_prob;
 	float cosine;
@@ -106,9 +107,9 @@ bool Dielectric::scatter(const Ray& r_in, const hit_record& hit_rec, vec3& atten
 
 	// choose
 	if (random_float_0_1() < reflect_prob)
-		scattered = Ray(hit_rec.p, reflected);
+		scatter_rec.specular_ray = Ray(hit_rec.p, reflected);
 	else
-		scattered = Ray(hit_rec.p, refracted);
+		scatter_rec.specular_ray = Ray(hit_rec.p, refracted);
 	return true;
 }
 
@@ -122,7 +123,7 @@ vec3 Light::emitted(const Ray& r_in, const hit_record& rec) const
 };
 
 
-bool MTL::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& scatter_rec)
+bool MTL::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& scatter_rec) const
 {
 	float has_diffuse = dot(para.Kd, vec3(1.0)),
 		has_specular = dot(para.Ks, vec3(1.0));
@@ -177,6 +178,7 @@ bool MTL::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& sc
 		{
 			scatter_rec.status = 2;
 			scatter_rec.albedo = vec3(1.0);
+			//scatter_rec.albedo = vec3(para.Kd[0]);
 			scatter_rec.specular_ray = Ray(hit_rec.p, refracted);
 			//scatter_rec.pdf_ptr = std::make_shared<PDF_cos_n>(refracted, para.Ni);
 			if (length(refracted) == 0)
@@ -188,20 +190,21 @@ bool MTL::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& sc
 	}
 
 	// reflection
-	if (has_specular && (random_float_0_1() > (has_diffuse / has_specular))
-		//(random_float_0_1() > 0.5)
+	if (has_specular 
+		/*&& (random_float_0_1() > (has_diffuse / has_specular))*/
+		&& (random_float_0_1() > 0.5)
 		&& (dot(-r_in.direction(), hit_rec.normal) >= 0))
 	{
 		vec3 reflected = reflect(normalize(r_in.direction()), normalize(hit_rec.normal));
-		scatter_rec.status = 2;
+		scatter_rec.status = 1;
 		/*vec3 H = -normalize(r_in.direction());
 		H += normalize(reflected);
 		H = normalize(H);
 		float tt = dot(normalize(hit_rec.normal), H);
 		scatter_rec.albedo = para.Ks*pow(dot(normalize(hit_rec.normal), H), para.Ni);*/
 		scatter_rec.albedo = para.Ks;
-		scatter_rec.specular_ray = Ray(hit_rec.p, reflected /*+ vec3(0.1 - 0.1 * para.Ns / 1000) * random_in_unit_sphere()*/);
-		//scatter_rec.pdf_ptr = std::make_shared<PDF_cos_n>(hit_rec.normal, para.Ns);
+		//scatter_rec.specular_ray = Ray(hit_rec.p, reflected + vec3(0.1*(1 - para.Ns / 1000)) * random_in_unit_sphere());
+		scatter_rec.pdf_ptr = std::make_shared<PDF_cos_n>(hit_rec.normal, para.Ns);
 		if (length(reflected) == 0)
 		{
 			cout << "MTL reflected length is 0: " << reflected << endl;
@@ -224,7 +227,7 @@ bool MTL::scatter(const Ray& r_in, const hit_record& hit_rec, scatter_record& sc
 	}
 }
 
-float MTL::scattering_pdf(const Ray& r_in, const hit_record& rec, const Ray& scattered)
+float MTL::scattering_pdf(const Ray& r_in, const hit_record& rec, const Ray& scattered) const
 {
 	float cosine = dot(rec.normal, scattered.direction());
 	if (cosine < 0)
@@ -232,7 +235,7 @@ float MTL::scattering_pdf(const Ray& r_in, const hit_record& rec, const Ray& sca
 	return cosine / M_PI;
 }
 
-float MTL::scattering_pdf_value_for_blinn_phone(const Ray& r_in, const hit_record& rec, const Ray& scattered)
+float MTL::scattering_pdf_value_for_blinn_phone(const Ray& r_in, const hit_record& rec, const Ray& scattered) const
 {
 	// importance sampling : scater_pdf/pdf = 4*((n+2)/(n+1)*(wo¡¤wh))
 	/*vec3 tmp = normalize(scattered.direction());
